@@ -1,0 +1,32 @@
+# 降级样本：chart_type=pie（schema 合法但简实现不支持）→ 占位帧 + warning；
+# particles 背景（M3 才做）→ 渐变降级 + warning。渲染不中断。
+version: "3.1"
+series: 降级演示
+episode: 1
+fps: 30
+scenes:
+  - type: chart
+    layout: chart-full
+    duration_frames: 30
+    title: 占比图（降级演示）
+    question: pie 支持吗？
+    core_message: 未支持的图表类型降级为占位帧，渲染继续
+    narration: { opening: "", explanation: "这一屏展示降级行为。", conclusion: "" }
+    visual: { primary: 占比饼图 }
+    transition: { next_question: "" }
+    chart_type: pie
+    data: returns.csv
+    insight: "pie 暂不支持，展示占位帧。"
+  - type: concept
+    layout: centered-text
+    duration_frames: 30
+    title: 粒子背景降级
+    question: particles 呢？
+    core_message: particles 背景在 M3 前降级为渐变底
+    narration: { opening: "", explanation: "粒子特效 M3 才做。", conclusion: "" }
+    visual: { primary: 粒子波浪 }
+    transition: { next_question: "" }
+    definition: "particles 特效背景当前降级为渐变。"
+    style:
+      effects:
+        background: { type: particles, skill: three/nebula-storm, params: { count: 5000, color: primary } }

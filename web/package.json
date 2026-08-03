@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node ./scripts/sync-remotion-preview.mjs",
     "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev",
+    "predev:turbo": "node ./scripts/sync-remotion-preview.mjs",
     "dev:turbo": "node --max-old-space-size=6144 ./node_modules/next/dist/bin/next dev --turbopack",
+    "prebuild": "node ./scripts/sync-remotion-preview.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -20,6 +23,7 @@
     "audit:report": "playwright show-report"
   },
   "dependencies": {
+    "@remotion/player": "4.0.502",
     "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
     "cytoscape": "^3.33.1",
@@ -28,8 +32,11 @@
     "framer-motion": "^12.24.0",
     "html2canvas": "^1.4.1",
     "i18next": "^25.8.0",
+    "js-yaml": "^5.2.2",
     "jspdf": "^4.2.0",
+    "katex": "^0.18.1",
     "lucide-react": "^0.562.0",
+    "mathjs": "^15.2.0",
     "mermaid": "^11.14.0",
     "next": "^16.2.3",
     "react": "^19.0.0",
@@ -42,10 +49,13 @@
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
+    "remotion": "4.0.502",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2",
+    "@types/js-yaml": "^4.0.9",
+    "@types/katex": "^0.16.8",
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",

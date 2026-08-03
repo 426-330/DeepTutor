@@ -11,6 +11,7 @@ import {
   Bot,
   Brain,
   ChevronDown,
+  Clapperboard,
   Github,
   HeartHandshake,
   House,
@@ -46,6 +47,13 @@ const PRIMARY_NAV: NavEntry[] = [
     label: "Home",
     icon: House,
     tooltipKey: "Home tooltip",
+    requires: "llm",
+  },
+  {
+    href: "/videos",
+    label: "Videos",
+    icon: Clapperboard,
+    tooltipKey: "Videos tooltip",
     requires: "llm",
   },
   {

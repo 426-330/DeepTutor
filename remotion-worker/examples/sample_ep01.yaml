@@ -1,0 +1,82 @@
+# 样本 spec：3 屏（problem_hook → formula → chart），覆盖 formula/chart 渲染。
+# 配套数据：examples/sample_ep01/data/returns.csv（chart.data 相对产物目录 data/ 解析）
+version: "3.1"
+series: 量化科普
+episode: 1
+fps: 30
+
+style:
+  theme: quant-traditional
+  fonts:
+    title: { family: "Noto Sans SC", weight: 800 }
+    body: { family: "Noto Sans SC", weight: 500 }
+    number: { family: "JetBrains Mono", weight: 600 }
+  effects:
+    transition: { type: fade, frames: 10 }
+    entrance: fadeIn
+    chart_motion: drawLine
+    background: { type: gradient }
+
+opening:
+  title: "最大回撤是什么？"
+  subtitle: "为什么同样赚30%体验天差地别"
+
+scenes:
+  - type: problem_hook
+    layout: split
+    duration_frames: 45
+    title: 同样赚30%为何体验不同
+    question: 什么拉开持有体验？
+    core_message: 差距往往在最大回撤，而非收益率
+    narration:
+      opening: ""
+      explanation: "收益相同不代表体验相同。"
+      conclusion: "看回撤。"
+    visual: { primary: 两条资金曲线, secondary: 关键词高亮, emphasis: 深度下跌区 }
+    transition: { next_question: "回撤到底怎么衡量？" }
+    phenomenon: "两个策略都赚30%，一个拿得住，另一个让人中途崩溃。"
+    counter_question: "真正拉开差距的，为什么不是收益率？"
+    promise: "这期讲清最大回撤。"
+
+  - type: formula
+    layout: formula-focus
+    duration_frames: 45
+    style:
+      effects:
+        transition: { type: wipe-left, frames: 12 }
+    title: 最大回撤的定义
+    question: 回撤如何计算？
+    core_message: 最大回撤是峰值到谷底的最大跌幅
+    narration:
+      opening: ""
+      explanation: "用峰值减谷底，再除以峰值。"
+      conclusion: "25%就是最大回撤。"
+    visual: { primary: 资金曲线峰值谷底标注 }
+    transition: { next_question: "图上的回撤在哪里？" }
+    formula: "MDD = \\frac{P_{peak} - P_{trough}}{P_{peak}}"
+    variables:
+      - { symbol: "P_{peak}", meaning: "历史峰值净值" }
+      - { symbol: "P_{trough}", meaning: "谷底净值" }
+    numeric_example: "(100 - 75) / 100"
+    derivation: "从最高点算起到最低点，才是持有者真实承受的痛。"
+
+  - type: chart
+    layout: chart-full
+    duration_frames: 45
+    style:
+      colors: { primary: danger }
+      effects:
+        transition: { type: slide, frames: 12 }
+    title: 净值曲线与回撤区
+    question: 图上哪里是回撤？
+    core_message: 峰值之后的那段深坑就是最大回撤发生的位置
+    narration:
+      opening: ""
+      explanation: "红线从峰值跌入谷底再修复。"
+      conclusion: "回撤越深，修复越难。"
+    visual: { primary: 净值折线图, emphasis: 回撤区间高亮 }
+    transition: { next_question: "如何控制回撤？" }
+    chart_type: line
+    data: returns.csv
+    axes: { x: "交易日", y: "净值" }
+    insight: "净值从 1.20 峰值跌至 0.90，回撤 25%，用了 8 个交易日才修复。"

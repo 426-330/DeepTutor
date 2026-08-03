@@ -57,6 +57,7 @@ from deeptutor.services.rag.factory import (
     GRAPHRAG_PROVIDER,
     LIGHTRAG_PROVIDER,
     PAGEINDEX_PROVIDER,
+    is_provider_enabled,
     normalize_provider_name,
     provider_uses_embedding_versions,
 )
@@ -567,8 +568,22 @@ def _validate_registered_provider(raw_provider: str | None) -> str:
     canonical provider is what makes the per-KB lock meaningful: the upload route
     compares the requested provider against the KB's bound provider, so asking to
     add to a ``pageindex`` KB with ``llamaindex`` (or vice versa) is rejected.
+
+    video-generation-system: 裁剪学习域（开关优先，可恢复）
+    本校验只用于"请求绑定"的 provider（新建 KB / 上传 / 改配置）；非
+    ENABLED_PROVIDERS 的引擎在此拒绝。读取既有 KB 绑定请直接用
+    ``normalize_provider_name``，保持读取兼容。
     """
-    return normalize_provider_name(raw_provider)
+    provider = normalize_provider_name(raw_provider)
+    if not is_provider_enabled(provider):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"RAG engine '{provider}' is disabled in this deployment. "
+                f"Only '{DEFAULT_PROVIDER}' is available for new knowledge bases."
+            ),
+        )
+    return provider
 
 
 def _assert_provider_ready(provider: str) -> None:
@@ -1383,7 +1398,9 @@ async def update_kb_config(kb_name: str, config: dict):
             requested_provider = _validate_registered_provider(config.get("rag_provider"))
             service = get_kb_config_service()
             current_config = service.get_kb_config(kb_name)
-            current_provider = _validate_registered_provider(
+            # video-generation-system: 裁剪学习域（开关优先，可恢复）
+            # 既有 KB 的绑定引擎用 normalize 解析（不做 enabled 门禁），保持读取兼容。
+            current_provider = normalize_provider_name(
                 current_config.get("rag_provider") or DEFAULT_PROVIDER
             )
             if requested_provider != current_provider:
@@ -2160,7 +2177,9 @@ async def upload_files(
 
         kb_entry = _load_kb_entry_or_404(manager, kb_name)
         _assert_kb_writable_or_409(kb_name, kb_entry)
-        kb_provider = _validate_registered_provider(
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # 既有 KB 的绑定引擎用 normalize 解析（不做 enabled 门禁），保持读取兼容。
+        kb_provider = normalize_provider_name(
             kb_entry.get("rag_provider") or DEFAULT_PROVIDER
         )
         if requested_provider and requested_provider != kb_provider:
@@ -2473,7 +2492,9 @@ async def reindex_knowledge_base(
         kb_entry = _load_kb_entry_or_404(manager, kb_name)
         _assert_not_connected_kb(kb_name, kb_entry)
         force_reindex = str(kb_entry.get("status") or "").lower() == "error"
-        kb_provider = _validate_registered_provider(
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # 既有 KB 的绑定引擎用 normalize 解析（不做 enabled 门禁），保持读取兼容。
+        kb_provider = normalize_provider_name(
             kb_entry.get("rag_provider") or DEFAULT_PROVIDER
         )
         _assert_provider_ready(kb_provider)
@@ -2825,7 +2846,9 @@ async def sync_folder(kb_name: str, folder_id: str, background_tasks: Background
         manager, kb_name, kb_base_dir = _writable_kb(kb_name)
         kb_entry = _load_kb_entry_or_404(manager, kb_name)
         _assert_kb_writable_or_409(kb_name, kb_entry)
-        kb_provider = _validate_registered_provider(
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # 既有 KB 的绑定引擎用 normalize 解析（不做 enabled 门禁），保持读取兼容。
+        kb_provider = normalize_provider_name(
             kb_entry.get("rag_provider") or DEFAULT_PROVIDER
         )
 

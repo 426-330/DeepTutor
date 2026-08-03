@@ -47,6 +47,18 @@ KNOWN_PROVIDERS = frozenset(
     }
 )
 
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# 新 KB 只允许绑定默认的 LlamaIndex 引擎；其余重引擎（pageindex/graphrag/
+# lightrag/lightrag-server/ima）在此开关层禁用，目录与读取兼容代码全部保留
+# （KNOWN_PROVIDERS / normalize_provider_name 不动，已有 KB 照常检索）。
+# 恢复某个引擎：把它的 provider 名加回本集合即可。
+ENABLED_PROVIDERS = frozenset({DEFAULT_PROVIDER})
+
+
+def is_provider_enabled(name: Optional[str]) -> bool:
+    """Whether ``name`` resolves to an engine new KBs may bind (see ENABLED_PROVIDERS)."""
+    return normalize_provider_name(name) in ENABLED_PROVIDERS
+
 # Cached pipeline instances keyed by (kb_base_dir, provider).
 _PIPELINE_CACHE: Dict[Tuple[Optional[str], str], Any] = {}
 
@@ -214,7 +226,9 @@ def list_pipelines() -> List[Dict[str, Any]]:
     except Exception:
         lightrag_server_modes, lightrag_server_default_mode = [], ""
 
-    return [
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # UI 选择器只列出 ENABLED_PROVIDERS 中的引擎（当前仅 LlamaIndex）。
+    pipelines = [
         {
             "id": DEFAULT_PROVIDER,
             "name": "LlamaIndex",
@@ -273,6 +287,7 @@ def list_pipelines() -> List[Dict[str, Any]]:
             "requires_api_key": False,
         },
     ]
+    return [p for p in pipelines if p["id"] in ENABLED_PROVIDERS]
 
 
 __all__ = [
@@ -282,9 +297,11 @@ __all__ = [
     "LIGHTRAG_PROVIDER",
     "LIGHTRAG_SERVER_PROVIDER",
     "IMA_PROVIDER",
+    "ENABLED_PROVIDERS",
     "KNOWN_PROVIDERS",
     "get_pipeline",
     "has_ready_provider_index",
+    "is_provider_enabled",
     "list_pipelines",
     "normalize_provider_name",
     "provider_failure_summary",

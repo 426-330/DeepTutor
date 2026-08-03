@@ -1,0 +1,11 @@
+# asset_gen capability prompts（zh）
+#
+# 本 capability 不调 LLM（imagegen/沙箱/文件解析），仅承载 StatusI18n 状态文案。
+
+status:
+  spec_invalid: spec 不是合法的 YAML mapping。
+  loaded: spec 已加载：{path}（{count} 屏），主题 {theme}。
+  illustration_done: 第 {scene}/{total} 屏插画已生成。
+  illustration_failed: 第 {scene} 屏插画生成失败（已降级，继续后续屏）。
+  done: 素材生成完成：{count} 个素材，manifest：`{manifest_path}`
+  done_degraded_note: （{count} 项降级，详见 manifest.degraded。）

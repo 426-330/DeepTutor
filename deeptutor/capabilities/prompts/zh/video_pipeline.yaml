@@ -1,0 +1,13 @@
+# video_pipeline capability prompts（zh）
+#
+# 本 capability 不调 LLM（编排四个子阶段），仅承载 StatusI18n 状态文案。
+
+status:
+  bad_start_from: 未知的 start_from 阶段：{start_from}
+  spec_required: start_from 需要已存在的 spec（请传 spec= 或先跑 video_spec 阶段）。
+  stage_started: 阶段 {stage} 开始。
+  stage_skipped: 阶段 {stage} 已完成，跳过。
+  stage_failed: 阶段 {stage} 失败；以 start_from={stage} 重跑即可续跑。
+  project_skills: 项目声明技能：{names}
+  summary_header: video_pipeline 阶段汇总：
+  summary_failed: 在 {failed} 阶段失败；修复后以 start_from={failed} 重跑即可续跑。

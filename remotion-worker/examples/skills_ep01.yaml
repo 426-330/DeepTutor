@@ -1,0 +1,55 @@
+# 技能样本（task 6.2/6.5）：3 屏各挂一个 three.js 特效背景技能
+# （video_dsl/skills/ 已安装，真实 R3F 渲染，不降级）。
+version: "3.1"
+series: 特效演示
+episode: 1
+fps: 30
+
+style:
+  theme: quant-traditional
+  effects:
+    transition: { type: fade, frames: 8 }
+    entrance: fadeIn
+
+scenes:
+  - type: concept
+    layout: centered-text
+    duration_frames: 30
+    title: 粒子波浪
+    question: 这是什么特效？
+    core_message: particle-wave 技能渲染正弦粒子网格波浪
+    narration: { opening: "", explanation: "粒子波浪背景。", conclusion: "" }
+    visual: { primary: 粒子波浪 }
+    transition: { next_question: "下一个特效是什么？" }
+    definition: "three/particle-wave：正弦相位驱动的粒子网格。"
+    style:
+      effects:
+        background: { type: particles, skill: three/particle-wave, params: { count: 3000, color: accent, speed: 1.2 } }
+
+  - type: concept
+    layout: centered-text
+    duration_frames: 30
+    title: 漂浮几何体
+    question: 下一个特效是什么？
+    core_message: floating-shapes 技能渲染漂浮几何体
+    narration: { opening: "", explanation: "漂浮几何体背景。", conclusion: "" }
+    visual: { primary: 漂浮圆环 }
+    transition: { next_question: "最后是什么特效？" }
+    definition: "three/floating-shapes：种子化布点的漂浮几何体。"
+    style:
+      effects:
+        background: { type: particles, skill: three/floating-shapes, params: { count: 10, shape: torus, color: primary } }
+
+  - type: concept
+    layout: centered-text
+    duration_frames: 30
+    title: 线框地形
+    question: 最后是什么特效？
+    core_message: grid-terrain 技能渲染滚动线框地形
+    narration: { opening: "", explanation: "线框地形背景。", conclusion: "" }
+    visual: { primary: 线框地形 }
+    transition: { next_question: "" }
+    definition: "three/grid-terrain：复古合成波风的滚动线框地形。"
+    style:
+      effects:
+        background: { type: particles, skill: three/grid-terrain, params: { color: secondary, amplitude: 1.2 } }

@@ -30,6 +30,7 @@ from deeptutor.knowledge.manifest import iter_kb_documents
 from deeptutor.services.file_io import atomic_write_json
 from deeptutor.services.rag.factory import (
     DEFAULT_PROVIDER,
+    ENABLED_PROVIDERS,
     IMA_PROVIDER,
     KNOWN_PROVIDERS,
     LIGHTRAG_SERVER_PROVIDER,
@@ -745,6 +746,14 @@ class KnowledgeBaseManager:
         if not name:
             raise ValueError("Knowledge base name is required.")
         provider = normalize_provider_name(provider)
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # 非 ENABLED_PROVIDERS 的引擎不允许绑定新 KB（linked 索引也不例外）；
+        # 恢复时在 factory.ENABLED_PROVIDERS 中加回引擎名即可。
+        if provider not in ENABLED_PROVIDERS:
+            raise ValueError(
+                f"RAG engine '{provider}' is disabled in this deployment; "
+                f"only '{DEFAULT_PROVIDER}' is available for new knowledge bases."
+            )
         folder = Path(external_path).expanduser()
         if not folder.is_dir():
             raise ValueError(f"Folder path is not a directory: {external_path}")
@@ -850,6 +859,14 @@ class KnowledgeBaseManager:
         """
         name = (name or "").strip()
         server_url = (server_url or "").strip().rstrip("/")
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # lightrag-server 引擎已禁用（factory.ENABLED_PROVIDERS），不再允许
+        # 注册新的 server 连接 KB；已有 KB 的读取路径不受影响。
+        if LIGHTRAG_SERVER_PROVIDER not in ENABLED_PROVIDERS:
+            raise ValueError(
+                f"RAG engine '{LIGHTRAG_SERVER_PROVIDER}' is disabled in this deployment; "
+                f"only '{DEFAULT_PROVIDER}' is available for new knowledge bases."
+            )
         if not name:
             raise ValueError("Knowledge base name is required.")
         if not server_url:
@@ -902,6 +919,14 @@ class KnowledgeBaseManager:
         client_id = (client_id or "").strip()
         api_key = (api_key or "").strip()
         knowledge_base_id = (knowledge_base_id or "").strip()
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # ima 引擎已禁用（factory.ENABLED_PROVIDERS），不再允许注册新的 IMA
+        # 连接 KB；已有 KB 的读取路径不受影响。
+        if IMA_PROVIDER not in ENABLED_PROVIDERS:
+            raise ValueError(
+                f"RAG engine '{IMA_PROVIDER}' is disabled in this deployment; "
+                f"only '{DEFAULT_PROVIDER}' is available for new knowledge bases."
+            )
         if not name:
             raise ValueError("Knowledge base name is required.")
         if not client_id or not api_key:

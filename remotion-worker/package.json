@@ -1,0 +1,55 @@
+{
+  "name": "remotion-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DeepTutor video generation — standalone Remotion render worker (YAML spec → IR → scene components)",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "gen:skills": "tsx src/skills/generate.ts",
+    "prebuild": "npm run gen:skills",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "render-sample": "tsx src/sample.ts",
+    "verify": "tsx scripts/verify.ts",
+    "verify:partial": "tsx scripts/verify-partial.ts",
+    "smoke:http": "tsx scripts/smoke-http.ts",
+    "smoke:queue": "tsx scripts/smoke-queue.ts"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "@remotion/three": "^4.0.502",
+    "ajv": "^8.20.0",
+    "bullmq": "^6.0.1",
+    "express": "^4.21.2",
+    "ioredis": "^5.11.1",
+    "js-yaml": "^5.2.2",
+    "katex": "^0.18.1",
+    "mathjs": "^15.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0",
+    "three": "^0.185.1",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/js-yaml": "^4.0.9",
+    "@types/katex": "^0.16.8",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.185.1",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

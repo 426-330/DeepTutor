@@ -40,11 +40,12 @@ def test_factory_dispatches_lightrag_lazily(tmp_path) -> None:
     assert "raganything" not in sys.modules
 
 
-def test_list_pipelines_includes_lightrag(monkeypatch) -> None:
+def test_list_pipelines_excludes_disabled_lightrag(monkeypatch) -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # lightrag 已被 ENABLED_PROVIDERS 禁用，不再出现在 picker 中；
+    # 读取兼容（normalize_provider_name）由下方用例覆盖。
     monkeypatch.setattr(lr_config, "is_lightrag_available", lambda: False)
-    entry = next(p for p in list_pipelines() if p["id"] == LIGHTRAG_PROVIDER)
-    assert entry["requires_api_key"] is False
-    assert entry["configured"] is False
+    assert all(p["id"] != LIGHTRAG_PROVIDER for p in list_pipelines())
 
 
 def test_normalize_provider_keeps_lightrag() -> None:

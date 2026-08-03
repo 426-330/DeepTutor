@@ -68,6 +68,7 @@ dependencies = [
     "pocketbase>=0.12.0",
     "loguru>=0.7.3,<1.0.0",
     "json-repair>=0.57.0,<1.0.0",
+    "jsonschema>=4.20.0",  # video spec §10 机器校验（draft 2020-12，D5）
 ]
 
 [project.scripts]
@@ -102,6 +103,8 @@ cli = [
     "pdfplumber>=0.11.0,<0.11.8",  # 0.11.8+ pins pdfminer.six==20251230, conflicts with mineru (via raganything)
     "reportlab>=4.0.0",
     "defusedxml>=0.7.1",
+    # video spec §10 机器校验（JSON Schema draft 2020-12）
+    "jsonschema>=4.20.0",
 ]
 
 # Compatibility extra for source installs and older docs. These packages are

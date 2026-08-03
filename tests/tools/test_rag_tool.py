@@ -38,17 +38,12 @@ class TestNormalizeProviderName:
 
 
 class TestPipelineFactory:
-    def test_list_pipelines_includes_pageindex(self) -> None:
+    def test_list_pipelines_only_offers_enabled_providers(self) -> None:
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # ENABLED_PROVIDERS 仅含默认引擎，picker 只应列出 LlamaIndex。
         pipelines = list_pipelines()
         assert isinstance(pipelines, list)
-        assert {p["id"] for p in pipelines} == {
-            DEFAULT_PROVIDER,
-            "pageindex",
-            "graphrag",
-            "lightrag",
-            "lightrag-server",
-            "ima",
-        }
+        assert {p["id"] for p in pipelines} == {DEFAULT_PROVIDER}
 
     def test_get_pipeline_returns_singleton(self) -> None:
         try:

@@ -1,0 +1,14 @@
+# video_pipeline capability prompts (en)
+#
+# This capability makes no LLM calls (orchestrates four sub-stages);
+# the file carries StatusI18n status strings.
+
+status:
+  bad_start_from: "Unknown start_from stage: {start_from}"
+  spec_required: start_from requires an existing spec (pass spec= or run the video_spec stage first).
+  stage_started: "Stage {stage} started."
+  stage_skipped: "Stage {stage} already done, skipped."
+  stage_failed: "Stage {stage} failed; rerun with start_from={stage} to resume."
+  project_skills: "Project skills: {names}"
+  summary_header: "video_pipeline stage summary:"
+  summary_failed: "Failed at stage {failed}; rerun with start_from={failed} after fixing."

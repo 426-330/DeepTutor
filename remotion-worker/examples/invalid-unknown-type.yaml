@@ -1,0 +1,13 @@
+# 负样本：未知场景 type（不在封闭 7 枚举内）→ schema 拒绝。
+version: "3.1"
+series: 负样本
+episode: 1
+scenes:
+  - type: intro
+    layout: split
+    title: 未知场景类型
+    question: 为什么不通过？
+    core_message: type 是封闭枚举，intro 不在其中
+    narration: { opening: "", explanation: "x", conclusion: "" }
+    visual: { primary: 测试 }
+    transition: { next_question: "" }

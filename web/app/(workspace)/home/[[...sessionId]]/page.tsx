@@ -1045,13 +1045,22 @@ export default function ChatPage() {
     const p = new URLSearchParams(window.location.search);
     const qc = p.get("capability");
     const qt = p.getAll("tool");
-    if (qc !== null) handleSelectCapability(qc || "");
-    else if (qt.length) {
+    if (qc !== null) {
+      // Video capabilities (video_pipeline / video_spec) aren't in the
+      // composer picker — they're launched from /videos — so they bypass
+      // the picker's fallback-to-chat resolution and pass straight through.
+      if (qc === "video_pipeline" || qc === "video_spec") setCapability(qc);
+      else handleSelectCapability(qc || "");
+    } else if (qt.length) {
       const valid = qt.filter((t): t is ToolName =>
         ALL_TOOLS.some((d) => d.name === t),
       );
       if (valid.length) setTools(Array.from(new Set(valid)));
     }
+    // /videos "new project" flow drops a ready-made brief into the composer;
+    // the user reviews and sends it manually.
+    const videoPrompt = p.get("video_prompt");
+    if (videoPrompt) handlePrefillComposer(videoPrompt);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -9,7 +9,9 @@ import typer
 from deeptutor.logging import configure_logging
 from deeptutor.runtime.mode import RunMode, set_mode
 
-from .book import register as register_book
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# book 命令组不再注册（学习域裁剪）；恢复时取消本行及下方 book 相关注释。
+# from .book import register as register_book
 from .chat import register as register_chat
 from .common import build_turn_request, console, maybe_run
 from .config_cmd import register as register_config
@@ -22,6 +24,7 @@ from .plugin import register as register_plugin
 from .provider_cmd import register as register_provider
 from .session_cmd import register as register_session
 from .skill import register as register_skill
+from .video import register as register_video
 
 set_mode(RunMode.CLI)
 configure_logging()
@@ -43,7 +46,9 @@ config_app = typer.Typer(help="Inspect configuration.")
 session_app = typer.Typer(help="Manage shared sessions.")
 notebook_app = typer.Typer(help="Manage notebooks and imported markdown records.")
 provider_app = typer.Typer(help="Manage provider OAuth login.")
-book_app = typer.Typer(help="Manage interactive Books (BookEngine).")
+video_app = typer.Typer(help="Video generation: render / preview / validate specs.")
+# video-generation-system: 裁剪学习域（开关优先，可恢复）——book 命令组已摘除。
+# book_app = typer.Typer(help="Manage interactive Books (BookEngine).")
 
 app.add_typer(partner_app, name="partner")
 app.add_typer(chat_app, name="chat")
@@ -56,7 +61,9 @@ app.add_typer(config_app, name="config")
 app.add_typer(session_app, name="session")
 app.add_typer(notebook_app, name="notebook")
 app.add_typer(provider_app, name="provider")
-app.add_typer(book_app, name="book")
+app.add_typer(video_app, name="video")
+# video-generation-system: 裁剪学习域（开关优先，可恢复）——book 命令组已摘除。
+# app.add_typer(book_app, name="book")
 
 register_partner(partner_app)
 register_chat(chat_app)
@@ -68,7 +75,9 @@ register_config(config_app)
 register_session(session_app)
 register_notebook(notebook_app)
 register_provider(provider_app)
-register_book(book_app)
+register_video(video_app)
+# video-generation-system: 裁剪学习域（开关优先，可恢复）——book 命令组已摘除。
+# register_book(book_app)
 register_init(app)
 
 
@@ -78,7 +87,8 @@ def run_capability(
         ...,
         help=(
             "Capability name (e.g. chat, deep_solve, deep_question, "
-            "deep_research, visualize, math_animator, mastery_path)."
+            "deep_research, visualize, math_animator)."
+            # video-generation-system: 裁剪学习域（开关优先，可恢复）——mastery_path 已摘除注册。
         ),
     ),
     message: str = typer.Argument(..., help="Message to send."),

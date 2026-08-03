@@ -1,0 +1,698 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deeptutor.local/video_dsl/schema/concept-video.schema.json",
+  "title": "Concept Video DSL v3.1",
+  "description": "概念讲解视频描述文件（YAML）的机器校验契约。权威文档：video_dsl/concept-video-dsl.md。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "series",
+    "episode",
+    "scenes"
+  ],
+  "properties": {
+    "version": {
+      "description": "DSL 版本。v3.0 文件无 style 块，全部取默认值。",
+      "enum": [
+        "3.0",
+        "3.1"
+      ]
+    },
+    "series": {
+      "type": "string",
+      "minLength": 1
+    },
+    "episode": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fps": {
+      "description": "帧率，缺省 30（IR 注入期补默认值）。",
+      "enum": [
+        24,
+        25,
+        30,
+        60
+      ],
+      "default": 30
+    },
+    "style": {
+      "$ref": "#/$defs/globalStyle"
+    },
+    "opening": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "maxLength": 14
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 20
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/scene"
+      }
+    }
+  },
+  "$defs": {
+    "hexColor": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "colorToken": {
+      "enum": [
+        "primary",
+        "secondary",
+        "accent",
+        "success",
+        "warning",
+        "danger",
+        "neutral"
+      ]
+    },
+    "fontFamily": {
+      "description": "字体白名单（随渲染镜像分发，OFL 许可优先）。",
+      "enum": [
+        "Noto Sans SC",
+        "Source Han Sans SC",
+        "Noto Serif SC",
+        "JetBrains Mono"
+      ]
+    },
+    "fontSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "family"
+      ],
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/fontFamily"
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 900
+        }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/fontSpec"
+        },
+        "body": {
+          "$ref": "#/$defs/fontSpec"
+        },
+        "number": {
+          "$ref": "#/$defs/fontSpec"
+        }
+      }
+    },
+    "transitionEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "fade",
+            "wipe-left",
+            "slide",
+            "zoom",
+            "none"
+          ]
+        },
+        "frames": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "backgroundEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "none",
+            "gradient",
+            "particles"
+          ]
+        },
+        "skill": {
+          "type": "string",
+          "description": "已安装特效技能标识（如 three/particle-wave），仅 type=particles 时允许。"
+        },
+        "params": {
+          "type": "object",
+          "description": "特效技能参数（组件 props）。颜色参数同样只许 7 个 token，禁裸 hex。"
+        }
+      },
+      "if": {
+        "properties": {
+          "type": {
+            "const": "particles"
+          }
+        }
+      },
+      "then": true,
+      "else": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "skill"
+              ]
+            },
+            {
+              "required": [
+                "params"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "transition": {
+          "$ref": "#/$defs/transitionEffect"
+        },
+        "entrance": {
+          "description": "元素默认入场动效。",
+          "enum": [
+            "fadeIn",
+            "slideUp",
+            "scaleIn",
+            "typewriter",
+            "none"
+          ]
+        },
+        "chart_motion": {
+          "description": "图表动效。",
+          "enum": [
+            "drawLine",
+            "growBar",
+            "countUp",
+            "none"
+          ]
+        },
+        "background": {
+          "$ref": "#/$defs/backgroundEffect"
+        }
+      }
+    },
+    "globalStyle": {
+      "description": "v3.1 顶层 style 块：五字段全可选。colors 值为 hex，重定义 token 的值（hex 唯一合法出现处）。",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "theme": {
+          "enum": [
+            "default",
+            "quant-traditional",
+            "tech-minimal",
+            "warm-editorial"
+          ]
+        },
+        "preset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "colors": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "primary": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "secondary": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "accent": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "success": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "warning": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "danger": {
+              "$ref": "#/$defs/hexColor"
+            },
+            "neutral": {
+              "$ref": "#/$defs/hexColor"
+            }
+          }
+        },
+        "fonts": {
+          "$ref": "#/$defs/fonts"
+        },
+        "effects": {
+          "$ref": "#/$defs/effects"
+        }
+      }
+    },
+    "sceneStyle": {
+      "description": "分镜级 style：与全局同结构，colors 值为 token 名（token→token 重映射），禁裸 hex。",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "theme": {
+          "enum": [
+            "default",
+            "quant-traditional",
+            "tech-minimal",
+            "warm-editorial"
+          ]
+        },
+        "preset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "colors": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "primary": {
+              "$ref": "#/$defs/colorToken"
+            },
+            "secondary": {
+              "$ref": "#/$defs/colorToken"
+            },
+            "accent": {
+              "$ref": "#/$defs/colorToken"
+            },
+            "success": {
+              "$ref": "#/$defs/colorToken"
+            },
+            "warning": {
+              "$ref": "#/$defs/colorToken"
+            },
+            "danger": {
+              "$ref": "#/$defs/colorToken"
+            },
+            "neutral": {
+              "$ref": "#/$defs/colorToken"
+            }
+          }
+        },
+        "fonts": {
+          "$ref": "#/$defs/fonts"
+        },
+        "effects": {
+          "$ref": "#/$defs/effects"
+        }
+      }
+    },
+    "narration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opening",
+        "explanation",
+        "conclusion"
+      ],
+      "properties": {
+        "opening": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "conclusion": {
+          "type": "string"
+        }
+      }
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "primary"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string"
+        },
+        "secondary": {
+          "type": "string"
+        },
+        "emphasis": {
+          "type": "string"
+        }
+      }
+    },
+    "pageTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "next_question": {
+          "type": "string"
+        }
+      }
+    },
+    "variable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "meaning"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "meaning": {
+          "type": "string"
+        }
+      }
+    },
+    "axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "layout",
+        "title",
+        "question",
+        "core_message",
+        "narration",
+        "visual",
+        "transition"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "opening",
+            "problem_hook",
+            "concept",
+            "formula",
+            "chart",
+            "conclusion",
+            "summary",
+            "data_comparison",
+            "timeline",
+            "quote",
+            "big_number",
+            "case_study",
+            "recap"
+          ]
+        },
+        "layout": {
+          "description": "layout_library 规范布局 id（别名在 IR 注入期归一化）。",
+          "enum": [
+            "full-hero",
+            "split",
+            "centered-text",
+            "formula-focus",
+            "chart-full",
+            "chart-side",
+            "card-grid-3",
+            "card-list",
+            "compare-2",
+            "timeline",
+            "quote-emphasis",
+            "title-closing",
+            "full-bleed",
+            "sidebar-left",
+            "split-40-60",
+            "stacked",
+            "quote-center",
+            "timeline-horizontal",
+            "comparison-2col",
+            "image-focus",
+            "text-focus",
+            "grid-3x2",
+            "overlay-caption",
+            "number-spotlight"
+          ]
+        },
+        "duration_frames": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 90,
+          "description": "可覆盖默认值 90；渲染 IR 注入期可被 audio/s<NN>.align.json 真实时长覆盖（不回写 YAML）。"
+        },
+        "style": {
+          "$ref": "#/$defs/sceneStyle"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "core_message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "narration": {
+          "$ref": "#/$defs/narration"
+        },
+        "visual": {
+          "$ref": "#/$defs/visual"
+        },
+        "transition": {
+          "$ref": "#/$defs/pageTransition"
+        },
+        "hook_line": {
+          "type": "string"
+        },
+        "key_visual": {
+          "type": "string"
+        },
+        "agenda": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 4
+        },
+        "phenomenon": {
+          "type": "string"
+        },
+        "counter_question": {
+          "type": "string"
+        },
+        "promise": {
+          "type": "string"
+        },
+        "definition": {
+          "type": "string"
+        },
+        "analogy": {
+          "type": "string"
+        },
+        "key_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 4
+        },
+        "misconception": {
+          "type": "string"
+        },
+        "formula": {
+          "type": "string"
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variable"
+          }
+        },
+        "numeric_example": {
+          "type": "string"
+        },
+        "derivation": {
+          "type": "string"
+        },
+        "chart_type": {
+          "enum": [
+            "line",
+            "bar",
+            "pie",
+            "scatter",
+            "area",
+            "histogram",
+            "heatmap"
+          ]
+        },
+        "data": {
+          "type": "string"
+        },
+        "axes": {
+          "$ref": "#/$defs/axes"
+        },
+        "insight": {
+          "type": "string"
+        },
+        "key_cards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "takeaway": {
+          "type": "string"
+        },
+        "call_to_action": {
+          "type": "string"
+        },
+        "recap_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5
+        },
+        "next_episode": {
+          "type": "string"
+        },
+        "series_cta": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metric"
+          },
+          "description": "data_comparison：并排指标（§13 要求 ≥2 条）"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/timelineEvent"
+          },
+          "description": "timeline：演进节点（§13 要求 ≥2 个）"
+        },
+        "quote_text": {
+          "type": "string"
+        },
+        "attribution": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "comparison": {
+          "type": "string"
+        },
+        "case_title": {
+          "type": "string"
+        },
+        "case_background": {
+          "type": "string"
+        },
+        "process": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 4
+        },
+        "result": {
+          "type": "string"
+        },
+        "lesson": {
+          "type": "string"
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 6
+        },
+        "bridge": {
+          "type": "string"
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unit": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "timelineEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

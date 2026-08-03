@@ -1,0 +1,18 @@
+# narration_gen capability prompts（zh）
+#
+# 本 capability 不调 LLM（TTS + 沙箱对齐），仅承载 StatusI18n 状态文案。
+
+status:
+  spec_invalid: spec 不是合法的 YAML mapping。
+  spec_invalid_detail: |
+    spec 未通过 §10 机器校验：
+    {errors}
+  loaded: spec 已加载：{path}（{count} 屏）。
+  scene_skipped: 第 {scene} 屏口播为空，跳过。
+  scene_audio: 第 {scene}/{total} 屏音频已生成。
+  tts_failed: 第 {scene} 屏 TTS 合成失败：{error}
+  align_degraded: 词级对齐已降级，渲染层将使用 DSL 默认时长。
+  done: |
+    配音完成：{audio_count} 个音频、{align_count} 个对齐文件
+    - 音频目录：`{audio_dir}`
+  done_degraded_note: （对齐已降级：渲染层将使用 DSL 默认时长；重跑本阶段即可补齐。）

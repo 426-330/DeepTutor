@@ -35,6 +35,8 @@ tenacity>=8.0.0
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
 aiosqlite>=0.19.0
+# video spec §10 机器校验（JSON Schema draft 2020-12）
+jsonschema>=4.20.0
 
 # --- RAG (LlamaIndex) ---
 llama-index>=0.14.12

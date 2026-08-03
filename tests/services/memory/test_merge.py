@@ -137,6 +137,16 @@ async def test_auto_merge_runs_even_when_update_added_no_facts(memory_dir, monke
     )
 
     from deeptutor.services.memory.consolidator.modes import update as update_mod
+    from deeptutor.services.memory.settings import ConsolidationSettings, MemorySettings
+
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # consolidator 默认旁路（consolidation.enabled=False），本用例测试
+    # auto-merge 本体逻辑，需显式开启。
+    monkeypatch.setattr(
+        update_mod,
+        "load_memory_settings",
+        lambda: MemorySettings(consolidation=ConsolidationSettings(enabled=True)),
+    )
 
     result = await update_mod.run_update("L2", "notebook")
     assert result.facts_added == 0

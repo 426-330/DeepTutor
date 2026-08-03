@@ -64,6 +64,9 @@ DEFAULT_INTEGRATIONS_SETTINGS: dict[str, Any] = {
     "pocketbase_external_url": "",
     "pocketbase_admin_email": "",
     "pocketbase_admin_password": "",
+    # remotion-worker HTTP 地址（video-generation-system 渲染层，D4）。
+    # 空串 = 调用侧回落默认 http://localhost:3100。
+    "remotion_worker_url": "",
 }
 
 # Document parsing settings. The parse layer (deeptutor/services/parsing)
@@ -664,6 +667,8 @@ class RuntimeSettingsService:
             payload["pocketbase_admin_email"] = value
         if value := self._process_env_value("POCKETBASE_ADMIN_PASSWORD"):
             payload["pocketbase_admin_password"] = value
+        if value := self._process_env_value("REMOTION_WORKER_URL"):
+            payload["remotion_worker_url"] = value
         return self._normalize_integrations(payload)
 
     def _apply_mineru_process_overrides(self, settings: dict[str, Any]) -> dict[str, Any]:
@@ -924,6 +929,7 @@ class RuntimeSettingsService:
             "pocketbase_external_url": _string(settings.get("pocketbase_external_url")).rstrip("/"),
             "pocketbase_admin_email": _string(settings.get("pocketbase_admin_email")),
             "pocketbase_admin_password": _string(settings.get("pocketbase_admin_password")),
+            "remotion_worker_url": _string(settings.get("remotion_worker_url")).rstrip("/"),
         }
 
 

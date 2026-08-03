@@ -1,0 +1,256 @@
+# Concept Video 场景模板库（v3.1 · 13 场景 / 24 布局）
+# 权威契约文档：video_dsl/concept-video-dsl.md
+# 本文件职责：① layout_library —— 24 个布局（每屏怎么布）；
+#             ② video_blueprint —— 7/10/13 屏三套长度预设（场景序列 + 每屏建议 layout）。
+
+layout_library:
+  - name: full-hero
+    描述: 全屏主视觉 + 大标题，第一屏定调
+    regions:
+      - hero        # 全幅主视觉区（插画/截图/关键数字）
+      - headline    # 大标题（居中偏下）
+      - subline     # 副标题/钩子句
+    适用场景: [opening]
+
+  - name: split
+    描述: 左右分栏，左文右图（或反之），叙述与视觉并行
+    regions:
+      - left        # 文字/要点区
+      - right       # 视觉区（插画/图表/关键词高亮）
+    适用场景: [problem_hook, concept]
+
+  - name: centered-text
+    描述: 居中单栏文字，逐行显现，适合抛问题与金句
+    regions:
+      - center      # 居中文本区（问题/反问/承诺）
+    适用场景: [problem_hook, conclusion]
+
+  - name: formula-focus
+    描述: 公式居中放大聚焦，下方变量表与算例
+    regions:
+      - formula     # KaTeX 公式区（主角）
+      - variables   # 变量释义列表
+      - example     # 数值算例区（Math.js 实时计算）
+    适用场景: [formula]
+
+  - name: chart-full
+    描述: 全幅图表，标题条 + 读图结论角标
+    regions:
+      - chart       # 全幅图表区
+      - insight     # 读图结论（角标/底部条）
+    适用场景: [chart]
+
+  - name: chart-side
+    描述: 图表主区 + 侧注栏，边看图边给解释
+    regions:
+      - chart       # 图表主区（约 2/3 宽）
+      - side        # 侧注栏（解释/数据标签）
+    适用场景: [chart, concept]
+
+  - name: card-grid-3
+    描述: 三卡网格，结论收束的标准形态（恰好 3 卡）
+    regions:
+      - card_1
+      - card_2
+      - card_3
+    适用场景: [conclusion]
+
+  - name: card-list
+    描述: 纵向要点卡列表，逐条入场，回顾复盘用
+    regions:
+      - list        # 要点卡纵向列表（≤5 条）
+    适用场景: [summary, concept]
+
+  - name: compare-2
+    描述: 双栏对比（A vs B），制造认知冲突
+    regions:
+      - left        # 对比项 A
+      - right       # 对比项 B
+    适用场景: [problem_hook, concept]
+
+  - name: timeline
+    描述: 横向/纵向时间轴，步骤与演进过程
+    regions:
+      - axis        # 时间轴主线
+      - nodes       # 节点（事件/步骤）
+    适用场景: [concept, summary]
+
+  - name: quote-emphasis
+    描述: 金句大字强调 + 背景压暗，情绪点与记忆点
+    regions:
+      - quote       # 金句主区（大字）
+      - attribution # 出处/补充（小字）
+    适用场景: [problem_hook, conclusion]
+
+  - name: title-closing
+    描述: 收尾标题卡，系列引导与下集预告
+    regions:
+      - title       # 收尾主标题
+      - cta         # 关注引导/下集预告
+    适用场景: [summary]
+
+  - name: full-bleed
+    描述: 全出血主视觉铺满，标题压角，最强视觉冲击
+    regions:
+      - hero        # 全幅主视觉（铺满）
+      - caption     # 压角标题/一句话
+    适用场景: [opening, quote]
+
+  - name: sidebar-left
+    描述: 左侧栏（要点导航/目录）+ 右侧主内容
+    regions:
+      - sidebar     # 左栏（要点列表）
+      - main        # 右侧主内容区
+    适用场景: [concept, recap, case_study]
+
+  - name: split-40-60
+    描述: 非对称分栏（左 40% 文 / 右 60% 视觉）
+    regions:
+      - left        # 文字区（40%）
+      - right       # 视觉区（60%）
+    适用场景: [concept, data_comparison, case_study]
+
+  - name: stacked
+    描述: 上下堆叠：视觉在上、文字在下
+    regions:
+      - top         # 视觉区（上）
+      - bottom      # 文字/要点区（下）
+    适用场景: [concept, chart, case_study]
+
+  - name: quote-center
+    描述: 居中金句 + 上下装饰线，极简引用页
+    regions:
+      - quote       # 金句主区
+      - attribution # 出处（小字）
+    适用场景: [quote, conclusion]
+
+  - name: timeline-horizontal
+    描述: 横向时间轴，节点上下交错排布
+    regions:
+      - axis        # 时间轴主线
+      - nodes       # 交错节点（事件/步骤）
+    适用场景: [timeline, case_study, summary]
+
+  - name: comparison-2col
+    描述: 双列对比带列头（A vs B 表格化）
+    regions:
+      - left        # 对比列 A（带列头）
+      - right       # 对比列 B（带列头）
+    适用场景: [data_comparison, problem_hook, concept]
+
+  - name: image-focus
+    描述: 大图主视觉 + 角标说明文字
+    regions:
+      - image       # 主视觉大图
+      - badge       # 角标说明
+    适用场景: [chart, concept]
+
+  - name: text-focus
+    描述: 纯文字聚焦：一句大字 + 一行小注
+    regions:
+      - headline    # 大字主张
+      - footnote    # 小注补充
+    适用场景: [problem_hook, quote, conclusion]
+
+  - name: grid-3x2
+    描述: 六格网格（3 列 × 2 行），多要点平铺
+    regions:
+      - cells       # 六格内容
+    适用场景: [data_comparison, recap, summary]
+
+  - name: overlay-caption
+    描述: 全幅视觉 + 底部浮层说明条
+    regions:
+      - hero        # 全幅视觉
+      - caption     # 底部浮层说明
+    适用场景: [chart, opening, case_study]
+
+  - name: number-spotlight
+    描述: 超大数字居中聚焦，单位与参照系环绕
+    regions:
+      - number      # 大数字
+      - context     # 含义/参照系
+    适用场景: [big_number]
+
+# 布局别名 → 规范 id（IR 注入期归一化，见 DSL §11/§12）
+layout_aliases:
+  hero: full-hero
+  fullscreen: full-hero
+  split-screen: split
+  left-right: split
+  center: centered-text
+  centered: centered-text
+  formula: formula-focus
+  chart: chart-full
+  full-chart: chart-full
+  chart-caption: chart-side
+  three-cards: card-grid-3
+  cards: card-grid-3
+  list: card-list
+  bullet-list: card-list
+  compare: compare-2
+  versus: compare-2
+  steps: timeline
+  quote: quote-emphasis
+  golden-sentence: quote-emphasis
+  closing: title-closing
+  end-card: title-closing
+  bleed: full-bleed
+  sidebar: sidebar-left
+  asymmetric-split: split-40-60
+  stack: stacked
+  centered-quote: quote-center
+  timeline-h: timeline-horizontal
+  two-col: comparison-2col
+  image: image-focus
+  text: text-focus
+  grid-6: grid-3x2
+  caption: overlay-caption
+  big-number: number-spotlight
+
+# 长度预设：场景 type 序列 + 每屏建议 layout（建议而非强制）
+video_blueprint:
+  short-7:
+    屏数: 7
+    定位: 短平快单点讲解（约 1 分钟内）
+    scenes:
+      - { type: opening,      layout: full-hero }
+      - { type: problem_hook, layout: split }
+      - { type: concept,      layout: split }
+      - { type: formula,      layout: formula-focus }
+      - { type: chart,        layout: chart-full }
+      - { type: conclusion,   layout: card-grid-3 }
+      - { type: summary,      layout: title-closing }
+
+  standard-10:
+    屏数: 10
+    定位: 标准科普单集（约 1.5–2 分钟）
+    scenes:
+      - { type: opening,      layout: full-hero }
+      - { type: problem_hook, layout: split }
+      - { type: concept,      layout: split }
+      - { type: big_number,   layout: number-spotlight }
+      - { type: formula,      layout: formula-focus }
+      - { type: chart,        layout: chart-full }
+      - { type: data_comparison, layout: comparison-2col }
+      - { type: case_study,   layout: stacked }
+      - { type: conclusion,   layout: card-grid-3 }
+      - { type: summary,      layout: title-closing }
+
+  full-13:
+    屏数: 13
+    定位: 深度讲解单集（约 2.5–3 分钟）
+    scenes:
+      - { type: opening,      layout: full-hero }
+      - { type: problem_hook, layout: compare-2 }
+      - { type: concept,      layout: split }
+      - { type: timeline,     layout: timeline-horizontal }
+      - { type: formula,      layout: formula-focus }
+      - { type: chart,        layout: chart-full }
+      - { type: big_number,   layout: number-spotlight }
+      - { type: data_comparison, layout: comparison-2col }
+      - { type: case_study,   layout: sidebar-left }
+      - { type: quote,        layout: quote-center }
+      - { type: recap,        layout: grid-3x2 }
+      - { type: conclusion,   layout: card-grid-3 }
+      - { type: summary,      layout: title-closing }

@@ -67,6 +67,9 @@ async def _collect_events(run_coro) -> list[StreamEvent]:
 
 
 def test_builtin_capability_registry_covers_documented_capabilities() -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # mastery_path 已在 fork 中摘除注册（builtin_capabilities.py 中注释保留）；
+    # video_* / narration_gen / asset_gen 为视频生成系统 M1+M2 新增注册。
     assert set(BUILTIN_CAPABILITY_CLASSES) == {
         "chat",
         "deep_solve",
@@ -74,7 +77,11 @@ def test_builtin_capability_registry_covers_documented_capabilities() -> None:
         "deep_research",
         "math_animator",
         "visualize",
-        "mastery_path",
+        "video_spec",
+        "narration_gen",
+        "asset_gen",
+        "video_compose",
+        "video_pipeline",
     }
 
 

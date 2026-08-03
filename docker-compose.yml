@@ -160,6 +160,66 @@ services:
     networks:
       - deeptutor-network
 
+  # ============================================
+  # Remotion Render Worker (video-generation-system change)
+  # ============================================
+  # Node service: receives POST /render {yaml_path, job_id} from the backend,
+  # renders YAML spec → mp4 via @remotion/renderer + headless Chrome + ffmpeg,
+  # pushes progress over WebSocket (/ws/progress). Horizontally scalable —
+  # raise replicas (and add the optional redis queue in M4) when concurrency
+  # grows. Reaches the shared video tree via the same ./data/videos volume the
+  # backend writes to.
+  remotion-worker:
+    build:
+      context: ./remotion-worker
+    container_name: deeptutor-remotion-worker
+    restart: unless-stopped
+    ports:
+      - "${DEEPTUTOR_DOCKER_REMOTION_PORT:-3100}:3100"
+    environment:
+      - PORT=3100
+      - RENDER_OUT_DIR=/app/data/videos
+      # BullMQ 队列（tasks 7.2）：默认关闭（内存直跑）。启用：
+      #   REMOTION_QUEUE_ENABLED=true docker compose --profile queue up -d
+      - QUEUE_ENABLED=${REMOTION_QUEUE_ENABLED:-false}
+      - REDIS_URL=${REMOTION_REDIS_URL:-redis://redis:6379}
+      - QUEUE_CONCURRENCY=${REMOTION_QUEUE_CONCURRENCY:-2}
+    volumes:
+      - ./data/videos:/app/data/videos
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - deeptutor-network
+
+  # ============================================
+  # Redis — optional BullMQ render queue (tasks 7.2)
+  # ============================================
+  # NOT started by default: `docker compose --profile queue up -d` together
+  # with REMOTION_QUEUE_ENABLED=true switches remotion-worker from in-process
+  # immediate rendering to BullMQ consumption (concurrency via
+  # REMOTION_QUEUE_CONCURRENCY, default 2). Without redis the worker keeps
+  # the memory path unchanged (and falls back with a warning if QUEUE_ENABLED
+  # is set but redis is unreachable).
+  redis:
+    image: redis:7-alpine
+    container_name: deeptutor-redis
+    profiles: ["queue"]
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "no"]
+    # No host port published — internal queue only.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - deeptutor-network
+
 # ============================================
 # Networks
 # ============================================

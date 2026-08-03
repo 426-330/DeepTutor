@@ -308,29 +308,34 @@ from deeptutor.api.routers import (
     agent_config,
     attachments,
     auth,
-    book,
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # book / co_writer / mastery_path / question / question_notebook /
+    # quiz_judge 六个学习域路由不再挂载（见下方 include_router 处的注记），
+    # 同步不再导入；恢复时取消此处与下方挂载处的注释即可。
+    # book,
     capabilities_settings,
     chat,
-    co_writer,
+    # co_writer,
     dashboard,
     imports,
     knowledge,
-    mastery_path,
+    # mastery_path,
     mcp_settings,
     memory,
     notebook,
     partners,
     personas,
     plugins_api,
-    question,
-    question_notebook,
-    quiz_judge,
+    # question,
+    # question_notebook,
+    # quiz_judge,
     sessions,
     settings,
     skills,
     subagents,
     system,
     unified_ws,
+    videos,
     voice,
 )
 from deeptutor.api.routers import (
@@ -359,9 +364,11 @@ app.include_router(
 )
 
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"], dependencies=_auth)
-app.include_router(
-    question.router, prefix="/api/v1/question", tags=["question"], dependencies=_auth
-)
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# question（Quiz 生成/仿真题 WS）路由不再挂载；恢复时取消注释。
+# app.include_router(
+#     question.router, prefix="/api/v1/question", tags=["question"], dependencies=_auth
+# )
 app.include_router(
     knowledge.router, prefix="/api/v1/knowledge", tags=["knowledge"], dependencies=_auth
 )
@@ -369,19 +376,25 @@ app.include_router(imports.router, prefix="/api/v1/imports", tags=["imports"], d
 app.include_router(
     dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"], dependencies=_auth
 )
-app.include_router(
-    mastery_path.router,
-    prefix="/api/v1/learning",
-    tags=["mastery-path"],
-    dependencies=_auth,
-)
-app.include_router(
-    co_writer.router, prefix="/api/v1/co_writer", tags=["co_writer"], dependencies=_auth
-)
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# mastery_path（Guided Learning / Learning Space）路由不再挂载；恢复时取消注释。
+# app.include_router(
+#     mastery_path.router,
+#     prefix="/api/v1/learning",
+#     tags=["mastery-path"],
+#     dependencies=_auth,
+# )
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# co_writer 路由不再挂载；恢复时取消注释。
+# app.include_router(
+#     co_writer.router, prefix="/api/v1/co_writer", tags=["co_writer"], dependencies=_auth
+# )
 app.include_router(
     notebook.router, prefix="/api/v1/notebook", tags=["notebook"], dependencies=_auth
 )
-app.include_router(book.router, prefix="/api/v1/book", tags=["book"], dependencies=_auth)
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# book（BookEngine）路由不再挂载；恢复时取消注释。
+# app.include_router(book.router, prefix="/api/v1/book", tags=["book"], dependencies=_auth)
 app.include_router(memory.router, prefix="/api/v1/memory", tags=["memory"], dependencies=_auth)
 app.include_router(
     capabilities_settings.router,
@@ -392,12 +405,14 @@ app.include_router(
 app.include_router(
     sessions.router, prefix="/api/v1/sessions", tags=["sessions"], dependencies=_auth
 )
-app.include_router(
-    question_notebook.router,
-    prefix="/api/v1/question-notebook",
-    tags=["question-notebook"],
-    dependencies=_auth,
-)
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# question_notebook（错题本/Quiz 持久化）路由不再挂载；恢复时取消注释。
+# app.include_router(
+#     question_notebook.router,
+#     prefix="/api/v1/question-notebook",
+#     tags=["question-notebook"],
+#     dependencies=_auth,
+# )
 app.include_router(
     settings.router, prefix="/api/v1/settings", tags=["settings"], dependencies=_auth
 )
@@ -417,6 +432,7 @@ app.include_router(
 app.include_router(tools_router.router, prefix="/api/v1/tools", tags=["tools"], dependencies=_auth)
 app.include_router(system.router, prefix="/api/v1/system", tags=["system"], dependencies=_auth)
 app.include_router(voice.router, prefix="/api/v1/voice", tags=["voice"], dependencies=_auth)
+app.include_router(videos.router, prefix="/api/v1/videos", tags=["videos"], dependencies=_auth)
 app.include_router(
     plugins_api.router, prefix="/api/v1/plugins", tags=["plugins"], dependencies=_auth
 )
@@ -439,7 +455,9 @@ app.include_router(unified_ws.router, prefix="/api/v1", tags=["unified-ws"])
 
 # Quiz AI-judge WebSocket — same caveat as unified_ws above; auth is checked
 # inside the handler so the WS upgrade isn't rejected by an HTTP-style dep.
-app.include_router(quiz_judge.router, prefix="/api/v1", tags=["quiz-judge"])
+# video-generation-system: 裁剪学习域（开关优先，可恢复）
+# quiz_judge（Quiz AI 批改 WS）路由不再挂载；恢复时取消注释。
+# app.include_router(quiz_judge.router, prefix="/api/v1", tags=["quiz-judge"])
 
 
 @app.get("/")

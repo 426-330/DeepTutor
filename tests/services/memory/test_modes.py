@@ -69,11 +69,16 @@ async def test_update_l2_appends_facts_from_chunk(memory_dir, monkeypatch):
     ):
         from deeptutor.services.memory.settings import (
             ChunkingSettings,
+            ConsolidationSettings,
             DedupSettings,
             MemorySettings,
         )
 
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # consolidator 默认旁路（consolidation.enabled=False），本用例测试
+        # consolidator 本体逻辑，需显式开启。
         mock_settings.return_value = MemorySettings(
+            consolidation=ConsolidationSettings(enabled=True),
             chunking=ChunkingSettings(min_chunk_chars=200, max_chunk_chars=400, overlap_ratio=0.0),
             dedup=DedupSettings(auto_after_update=False),
         )
@@ -105,9 +110,17 @@ async def test_update_l2_idempotent_when_no_new_entities(memory_dir, monkeypatch
         ),
         patch.object(update_mod, "load_memory_settings") as mock_settings,
     ):
-        from deeptutor.services.memory.settings import DedupSettings, MemorySettings
+        from deeptutor.services.memory.settings import (
+            ConsolidationSettings,
+            DedupSettings,
+            MemorySettings,
+        )
 
-        mock_settings.return_value = MemorySettings(dedup=DedupSettings(auto_after_update=False))
+        # video-generation-system: consolidator 默认旁路，测试显式开启（同上）。
+        mock_settings.return_value = MemorySettings(
+            consolidation=ConsolidationSettings(enabled=True),
+            dedup=DedupSettings(auto_after_update=False),
+        )
         first = await update_mod.run_update("L2", "chat", language="en")
     assert first.facts_added >= 0
 
@@ -126,9 +139,17 @@ async def test_update_l2_idempotent_when_no_new_entities(memory_dir, monkeypatch
         ),
         patch.object(update_mod, "load_memory_settings") as mock_settings,
     ):
-        from deeptutor.services.memory.settings import DedupSettings, MemorySettings
+        from deeptutor.services.memory.settings import (
+            ConsolidationSettings,
+            DedupSettings,
+            MemorySettings,
+        )
 
-        mock_settings.return_value = MemorySettings(dedup=DedupSettings(auto_after_update=False))
+        # video-generation-system: consolidator 默认旁路，测试显式开启（同上）。
+        mock_settings.return_value = MemorySettings(
+            consolidation=ConsolidationSettings(enabled=True),
+            dedup=DedupSettings(auto_after_update=False),
+        )
         second = await update_mod.run_update("L2", "chat", language="en")
     assert second.no_new_input is True
     assert llm_called == []
@@ -153,12 +174,15 @@ async def test_update_l2_drops_facts_with_out_of_pool_refs(memory_dir, monkeypat
         patch.object(update_mod, "load_memory_settings") as mock_settings,
     ):
         from deeptutor.services.memory.settings import (
+            ConsolidationSettings,
             DedupSettings,
             MemorySettings,
             ReferenceSettings,
         )
 
+        # video-generation-system: consolidator 默认旁路，测试显式开启（同上）。
         mock_settings.return_value = MemorySettings(
+            consolidation=ConsolidationSettings(enabled=True),
             dedup=DedupSettings(auto_after_update=False),
             reference=ReferenceSettings(enforce_required=True, drop_invalid_refs=True),
         )

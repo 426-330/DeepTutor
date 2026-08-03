@@ -1,0 +1,15 @@
+# 负样本：分镜 style.colors 出现裸 hex（只允许 token 重映射）→ schema 拒绝。
+version: "3.1"
+series: 负样本
+episode: 1
+scenes:
+  - type: concept
+    layout: split
+    title: 裸 hex 拒绝
+    question: 为什么不通过？
+    core_message: 场景内禁裸 hex，只能引用 token
+    narration: { opening: "", explanation: "x", conclusion: "" }
+    visual: { primary: 测试 }
+    transition: { next_question: "" }
+    style:
+      colors: { primary: "#FF0000" }

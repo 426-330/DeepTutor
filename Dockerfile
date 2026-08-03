@@ -35,6 +35,13 @@ RUN npm config set fetch-timeout 600000 && \
 # Copy frontend source code
 COPY web/ ./
 
+# video-generation-system: the web prebuild hook (web/scripts/
+# sync-remotion-preview.mjs) vendors the fs-free subset of the remotion-worker
+# source (parser/components/scenes/layouts) into web/vendor/ for the Remotion
+# Player preview. The worker source must therefore be present at
+# ../remotion-worker relative to /app/web during `npm run build`.
+COPY remotion-worker/src /app/remotion-worker/src
+
 # Provide the single source of truth for the app version so next.config.js
 # can read it during ``npm run build`` and inline it into the bundle.
 COPY deeptutor/__version__.py /app/deeptutor/__version__.py

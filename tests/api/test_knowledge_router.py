@@ -127,60 +127,36 @@ def _write_ready_llamaindex_version(kb_dir: Path) -> None:
     )
 
 
-def test_rag_providers_lists_llamaindex_and_pageindex() -> None:
+def test_rag_providers_lists_enabled_providers_only() -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）——新 KB 只能绑定
+    # ENABLED_PROVIDERS（deeptutor/services/rag/factory.py，当前仅 llamaindex），
+    # 故列表只含 LlamaIndex；恢复 = 把引擎名加回 ENABLED_PROVIDERS，其余引擎的
+    # requires_api_key / modes / configured 断言届时一并恢复。
     with TestClient(_build_app()) as client:
         response = client.get("/api/v1/knowledge/rag-providers")
 
     assert response.status_code == 200
     payload = response.json()
     by_id = {p["id"]: p for p in payload["providers"]}
-    assert set(by_id) == {
-        "llamaindex",
-        "pageindex",
-        "graphrag",
-        "lightrag",
-        "lightrag-server",
-        "ima",
-    }
-    # LlamaIndex works out of the box; PageIndex needs an API key; GraphRAG and
-    # LightRAG are optional local engines (no API key, configured = installed).
+    assert set(by_id) == {"llamaindex"}
+    # LlamaIndex works out of the box (no API key, no mode switch).
     assert by_id["llamaindex"]["requires_api_key"] is False
-    assert by_id["pageindex"]["requires_api_key"] is True
-    assert by_id["graphrag"]["requires_api_key"] is False
-    assert by_id["lightrag"]["requires_api_key"] is False
-    # LightRAG Server is a thin HTTP client: always available, no API key gate
-    # (the per-KB endpoint is configured at connect time).
-    assert by_id["lightrag-server"]["requires_api_key"] is False
-    assert by_id["lightrag-server"]["configured"] is True
-    # Same for IMA: a thin HTTPS client, credentials bound per-KB at connect
-    # time rather than gated by one global key.
-    assert by_id["ima"]["requires_api_key"] is False
-    assert by_id["ima"]["configured"] is True
-    # Mode-aware engines advertise their retrieval modes; vector engines don't.
-    assert "hybrid" in by_id["lightrag"]["modes"]
-    assert "mix" in by_id["lightrag-server"]["modes"]
     assert not by_id["llamaindex"].get("modes")
-    # IMA exposes a single retrieval call, so it advertises no modes.
-    assert not by_id["ima"].get("modes")
 
 
-def test_set_rag_provider_mode_persists_validates_and_reflects() -> None:
+def test_set_rag_provider_mode_rejects_disabled_or_modeless_engines() -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）——ENABLED_PROVIDERS
+    # 当前仅 llamaindex（无 retrieval modes），被裁剪的 mode-aware 引擎
+    # （lightrag 等）不在 providers 列表中，mode 端点对二者都 404；
+    # 恢复 ENABLED_PROVIDERS 后，lightrag PUT mode 应恢复 200 + default_mode 反射。
     with TestClient(_build_app()) as client:
-        ok = client.put("/api/v1/knowledge/rag-providers/lightrag/mode", json={"mode": "MIX"})
-        assert ok.status_code == 200
-        assert ok.json()["mode"] == "mix"  # normalized
-
-        providers = client.get("/api/v1/knowledge/rag-providers").json()["providers"]
-        by_id = {p["id"]: p for p in providers}
-        assert by_id["lightrag"]["default_mode"] == "mix"
-
-        # Invalid mode for the engine → 400; mode-less engine → 404.
+        # 被裁剪引擎 → 404（不在 ENABLED_PROVIDERS 列表中）
         assert (
-            client.put(
-                "/api/v1/knowledge/rag-providers/lightrag/mode", json={"mode": "bogus"}
-            ).status_code
-            == 400
+            client.put("/api/v1/knowledge/rag-providers/lightrag/mode", json={"mode": "MIX"})
+            .status_code
+            == 404
         )
+        # mode-less engine → 404
         assert (
             client.put(
                 "/api/v1/knowledge/rag-providers/llamaindex/mode", json={"mode": "x"}
@@ -263,7 +239,11 @@ def test_create_coerces_legacy_provider_to_llamaindex(monkeypatch, tmp_path: Pat
     assert manager.config["knowledge_bases"]["kb-legacy"]["rag_provider"] == "llamaindex"
 
 
-def test_create_preserves_known_nondefault_provider(monkeypatch, tmp_path: Path) -> None:
+def test_create_rejects_disabled_provider(monkeypatch, tmp_path: Path) -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）——pageindex 不在
+    # ENABLED_PROVIDERS 中，新建 KB 绑定被裁剪引擎在门禁处 400 拒绝（即使引擎
+    # 本身已配置 API key）；恢复 = 把引擎名加回 ENABLED_PROVIDERS，届时本用例
+    # 恢复为"create preserves known nondefault provider"（200 + 绑定保持）。
     manager = _FakeKBManager(tmp_path / "knowledge_bases")
     monkeypatch.setattr(knowledge_router_module, "get_kb_manager", lambda: manager)
     monkeypatch.setattr(knowledge_router_module, "KnowledgeBaseInitializer", _FakeInitializer)
@@ -284,8 +264,9 @@ def test_create_preserves_known_nondefault_provider(monkeypatch, tmp_path: Path)
             files=[("files", ("demo.pdf", b"%PDF-1.4\n", "application/pdf"))],
         )
 
-    assert response.status_code == 200
-    assert manager.config["knowledge_bases"]["kb-page"]["rag_provider"] == "pageindex"
+    assert response.status_code == 400
+    assert "disabled" in response.json()["detail"]
+    assert "kb-page" not in manager.config["knowledge_bases"]
 
 
 def test_create_rejects_invalid_files_before_registering_kb(monkeypatch, tmp_path: Path) -> None:
@@ -915,7 +896,10 @@ def test_update_config_coerces_legacy_provider_to_llamaindex() -> None:
     assert fake_service.config.get("rag_provider") == "llamaindex"
 
 
-def test_update_config_preserves_known_provider() -> None:
+def test_update_config_rejects_disabled_provider() -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）——改配置绑定
+    # pageindex 同样过 ENABLED_PROVIDERS 门禁 → 400，配置保持不写；
+    # 恢复门禁后本用例恢复为"preserves known provider"（200 + 绑定保持）。
     class _FakeConfigService:
         def __init__(self) -> None:
             self.config: dict = {}
@@ -940,11 +924,16 @@ def test_update_config_preserves_known_provider() -> None:
                 json={"rag_provider": "pageindex"},
             )
 
-    assert response.status_code in {200, 204}
-    assert fake_service.config.get("rag_provider") == "pageindex"
+    assert response.status_code == 400
+    assert "disabled" in response.json()["detail"]
+    assert fake_service.config.get("rag_provider") is None
 
 
 def test_update_config_rejects_provider_change_for_ready_index(monkeypatch, tmp_path: Path) -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）——ENABLED_PROVIDERS
+    # 门禁先于 ready-index 检查触发：换成被裁剪的 pageindex 直接 400（disabled）。
+    # 409 "ready llamaindex index" 路径对"enabled → enabled"的切换仍然保留，
+    # 恢复 ENABLED_PROVIDERS 后本用例应回到 409 断言。
     kb_dir = tmp_path / "demo"
     kb_dir.mkdir(parents=True)
     _write_ready_llamaindex_version(kb_dir)
@@ -972,22 +961,21 @@ def test_update_config_rejects_provider_change_for_ready_index(monkeypatch, tmp_
             json={"rag_provider": "pageindex"},
         )
 
-    assert response.status_code == 409
-    assert "ready llamaindex index" in response.json()["detail"]
+    assert response.status_code == 400
+    assert "disabled" in response.json()["detail"]
     assert fake_service.config["rag_provider"] == "llamaindex"
 
 
 def test_rag_providers_marks_linkable() -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）——providers 列表
+    # 当前仅含 ENABLED_PROVIDERS 中的 llamaindex；被裁剪引擎的 linkable 断言
+    # （graphrag/lightrag True、pageindex/lightrag-server False）随门禁恢复一并恢复。
     with TestClient(_build_app()) as client:
         providers = client.get("/api/v1/knowledge/rag-providers").json()["providers"]
     by_id = {p["id"]: p for p in providers}
-    # Self-contained local indexes can be linked in place; PageIndex (cloud) and
-    # LightRAG Server (remote, no local folder) can't.
+    # Self-contained local indexes can be linked in place.
+    assert set(by_id) == {"llamaindex"}
     assert by_id["llamaindex"]["linkable"] is True
-    assert by_id["graphrag"]["linkable"] is True
-    assert by_id["lightrag"]["linkable"] is True
-    assert by_id["pageindex"]["linkable"] is False
-    assert by_id["lightrag-server"]["linkable"] is False
 
 
 def test_probe_folder_endpoint_finds_ready_index(tmp_path: Path) -> None:

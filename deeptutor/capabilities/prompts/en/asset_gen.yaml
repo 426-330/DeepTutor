@@ -1,0 +1,12 @@
+# asset_gen capability prompts (en)
+#
+# This capability makes no LLM calls (imagegen / sandbox / file parsing);
+# the file carries StatusI18n status strings.
+
+status:
+  spec_invalid: Spec is not a YAML mapping.
+  loaded: "Spec loaded: {path} ({count} scenes), theme {theme}."
+  illustration_done: "Scene {scene}/{total} illustration done."
+  illustration_failed: "Scene {scene}: illustration failed (degraded, continuing)."
+  done: "Assets done: {count} asset(s), manifest: `{manifest_path}`"
+  done_degraded_note: "({count} degraded item(s) — see manifest.degraded.)"

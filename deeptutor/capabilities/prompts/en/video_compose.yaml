@@ -1,0 +1,13 @@
+# video_compose capability prompts (en)
+#
+# This capability makes no LLM calls (HTTP to remotion-worker);
+# the file carries StatusI18n status strings.
+
+status:
+  spec_invalid: Spec is not a YAML mapping.
+  submitting: "Submitting render job {job_id} to {worker_url}..."
+  render_progress: "Rendering... {pct}%"
+  render_done: "Render done: {path}"
+  done: |
+    Render complete: `{render_path}`
+    - job_id: {job_id} · {total_frames} frames @ {fps}fps

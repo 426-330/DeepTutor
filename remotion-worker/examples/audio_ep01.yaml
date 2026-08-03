@@ -1,0 +1,45 @@
+# 音频样本（M2）：2 屏，s01 配音 2.0s（覆盖默认 90 帧 → 60 帧）+ cues，
+# s02 配音 1.5s（→ 45 帧），bgm/ 内置垫底音乐。
+# 音频文件由 ffmpeg 合成（scripts/verify.ts 的 make-fixtures 步骤可重建）。
+version: "3.1"
+series: 音频演示
+episode: 1
+fps: 30
+
+style:
+  theme: quant-traditional
+  effects:
+    transition: { type: fade, frames: 8 }
+    entrance: fadeIn
+    background: { type: gradient }
+
+scenes:
+  - type: concept
+    layout: split
+    title: 配音与字幕
+    question: 音轨如何对齐？
+    core_message: 每屏配音按 startFrame 定位，字幕按 cue 帧区间精确显示
+    narration:
+      opening: ""
+      explanation: "这一屏有两秒配音和两条字幕。"
+      conclusion: ""
+    visual: { primary: 声波示意 }
+    transition: { next_question: "BGM 呢？" }
+    definition: "配音音轨与字幕 cue 都来自 align.json 配套产物。"
+    key_points: [ "第一条 cue 在前一秒", "第二条 cue 在后一秒" ]
+
+  - type: chart
+    layout: chart-full
+    title: BGM 垫底
+    question: BGM 怎么混？
+    core_message: BGM 全片循环低音量垫底，配音为主
+    narration:
+      opening: ""
+      explanation: "这一屏有一点五秒配音，BGM 全程垫底。"
+      conclusion: ""
+    visual: { primary: 净值折线图 }
+    transition: { next_question: "" }
+    chart_type: line
+    data: returns.csv
+    axes: { x: "交易日", y: "净值" }
+    insight: "音频流应包含配音与 BGM 的混合。"

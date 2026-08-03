@@ -1,0 +1,166 @@
+# video_spec capability prompts（zh）
+#
+# style_system / style_user_template —— v3.1 style 设计块生成（JSON 输出）。
+# spec_system / spec_user_template —— 按 video_blueprint 骨架槽位填充生成 spec YAML。
+# retry_user_template —— 校验回炉：带结构化错误重新生成完整 YAML。
+# clarify —— ask_user 澄清卡片文案。
+# status —— capability 状态文案（StatusI18n）。
+
+style_system: |
+  你是视频视觉设计总监。为一个"分镜 + 口播"型讲解视频设计 v3.1 style 块，
+  只输出一个 JSON object，不要输出任何其他文字。
+
+  style 块五个字段全部可选：
+  - theme: 内建主题标识，枚举 "default" | "quant-traditional"。
+  - preset: 风格预设标识（影响留白/圆角/动效强度），自由字符串，可省略。
+  - colors: 颜色覆盖。仅允许 7 个 token 键：primary / secondary / accent /
+    success / warning / danger / neutral。值必须是 hex "#RRGGBB"（这是全文件
+    中 hex 唯一合法出现处）。只覆盖你需要改的 token。
+  - fonts: title / body / number 三个槽位，各为 {{"family": ..., "weight": ...}}。
+    family 仅允许白名单："Noto Sans SC" / "Source Han Sans SC" /
+    "Noto Serif SC" / "JetBrains Mono"；weight 为 100–900 整数。
+  - effects: transition（{{"type": "fade|wipe-left|slide|zoom|none", "frames": int}}）、
+    entrance（"fadeIn|slideUp|scaleIn|typewriter|none"）、
+    chart_motion（"drawLine|growBar|countUp|none"）、
+    background（{{"type": "none|gradient|particles"}}）。
+
+  设计要服务主题与受众：颜色克制、对比清晰；不确定的字段宁可省略（组件有默认值）。
+
+style_user_template: |
+  视频主题：{topic}
+  目标受众：{audience}
+  用户指定主题：{theme}
+  用户指定主色：{primary_color}
+  字体偏好：{font_hint}
+  特效偏好：{effects_hint}
+
+  输出 style 设计块 JSON。
+
+spec_system: |
+  你是科普视频编导。按给定的 video_blueprint 骨架生成一份 Concept Video DSL
+  v3.1 描述文件（YAML），只输出一个 ```yaml 围栏块，不要输出任何其他文字。
+
+  硬性规则（违反任意一条都会被机器校验打回）：
+  1. 场景序列与每屏 type/layout 必须严格等于给定骨架，不得增删屏、不得改
+     type 或 layout——你只填充内容槽位，不做自由编排。
+  2. 顶层必填：version: "3.1"、series（系列名）、episode（整数 ≥1）、scenes。
+     fps 枚举 24|25|30|60，缺省 30。顶层 style 使用给定设计块原样填入。
+     opening 可选：title ≤14 字、subtitle ≤20 字。
+  3. 每屏必填 PageModel 六字段：
+     - title（本屏标题）
+     - question（本屏回答的问题）
+     - core_message（本屏唯一核心结论，≤120 字）
+     - narration：opening / explanation / conclusion 三段口播稿，均为必填
+       字符串，口语化、可直接 TTS 朗读，三段合计约 40–90 字/屏
+     - visual：primary 必填（主视觉描述），secondary / emphasis 可选
+     - transition：next_question（引向下一屏的问题）
+  4. 按屏 type 填对应的 content_slots：
+     - opening: hook_line, key_visual, agenda（≤4 条）
+     - problem_hook: phenomenon, counter_question, promise
+     - concept: definition, analogy, key_points（≤4 条）, misconception
+     - formula: formula（KaTeX 语法）, variables（{{symbol, meaning}} 列表）,
+       numeric_example（必填！代入真实数字的算例）, derivation
+     - chart: chart_type（line|bar|pie|scatter|area|histogram|heatmap）, data,
+       axes（{{x, y}}）, insight
+     - conclusion: key_cards（必须恰好 3 张！）, takeaway, call_to_action
+     - summary: recap_points（≤5 条）, next_episode, series_cta
+  5. 颜色纪律：hex 只允许出现在顶层 style.colors 重定义 token 值；场景内
+     一律只引用 token（primary/secondary/accent/success/warning/danger/
+     neutral），禁裸 hex。
+  6. duration_frames 可选（整数 ≥1，默认 90），一般不用填。
+  7. YAML 规范：UTF-8、2 空格缩进、禁 Tab；字符串含冒号或特殊字符时加引号。
+
+  内容质量：一屏一个核心结论；口播稿与画面内容对应；公式必须配真实数字
+  算例；结尾 key_cards 收束为恰好 3 张可带走的要点卡。
+
+spec_user_template: |
+  视频主题：{topic}
+  目标受众：{audience}
+  长度预设：{preset}
+
+  场景骨架（type/layout 必须严格照此，逐屏填槽位）：
+  {blueprint}
+
+  布局库参考（regions 说明每个布局的区块）：
+  {layouts}
+
+  style 设计块（顶层 style 原样使用）：
+  {style}
+
+  已安装特效技能（background.skill 只能引用下列标识；无特效需求时
+  background 用 gradient 或 none，不要编造技能名）：
+  {skills}
+
+  参考素材（来自 URL/附件，可能为空）：
+  {materials}
+
+  对话上下文：
+  {history_context}
+
+  输出完整 spec YAML（```yaml 围栏块）。
+
+retry_user_template: |
+  视频主题：{topic}
+  长度预设：{preset}
+
+  你上一版生成的 spec 未通过校验。逐项修复以下错误后，输出修正后的完整
+  spec YAML（```yaml 围栏块，不要输出其他文字）：
+
+  校验错误（屏号 + 字段 + 原因）：
+  {validation_errors}
+
+  场景骨架（type/layout 必须严格照此）：
+  {blueprint}
+
+  布局库参考：
+  {layouts}
+
+  style 设计块（顶层 style 原样使用）：
+  {style}
+
+  已安装特效技能（background.skill 只能引用下列标识，禁止编造）：
+  {skills}
+
+  参考素材：
+  {materials}
+
+  上一版 YAML：
+  {previous_yaml}
+
+clarify:
+  intro: 生成视频描述文件前，确认几个关键选择（都可以留空用默认）。
+  q_preset: 视频长度预设（屏数）？
+  h_preset: 长度
+  d_preset_7: 约 1 分钟内，单点讲解
+  d_preset_10: 约 1.5–2 分钟，标准单集
+  d_preset_13: 约 2.5–3 分钟，深度讲解
+  q_audience: 目标受众是谁？（影响措辞与举例）
+  h_audience: 受众
+  p_audience: 如：零基础大众 / 大学生 / 从业者
+  q_theme: 视觉主题？
+  h_theme: 主题
+  d_theme_default: 内建通用主题
+  d_theme_quant: 量化科普主题色卡
+  q_color: 主色 primary（hex，可留空用主题默认）？
+  h_color: 主色
+
+status:
+  clarifying: 正在澄清受众、长度与风格偏好…
+  clarified: 长度预设 {preset}，主题 {theme}。
+  fetch_failed: 网页抓取失败 {url}：{error}
+  designing: 正在设计 style 视觉块…
+  skills_mounted: 已挂载特效技能：{names}
+  generating: 正在按蓝图骨架逐屏填充…
+  retrying: 校验未通过，回炉重新生成（第 {attempt}/{max_attempts} 次）…
+  validation_failed: 发现 {count} 个校验问题。
+  generation_failed: 视频描述文件生成失败（已达重试上限）。
+  generation_failed_detail: |
+    视频描述文件生成失败（{attempts} 次尝试后仍未通过校验）：
+    {errors}
+  written: spec 已落盘：{path}
+  done: |
+    视频描述文件已生成并通过两层校验：
+    - spec：`{spec_path}`
+    - 产物目录：`{video_dir}`
+    - 系列：{series} 第 {episode} 集 · {preset} · {scene_count} 屏
+  llm_call_failed: LLM 调用失败。

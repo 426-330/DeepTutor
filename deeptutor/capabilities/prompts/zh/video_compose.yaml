@@ -1,0 +1,12 @@
+# video_compose capability prompts（zh）
+#
+# 本 capability 不调 LLM（HTTP 调 remotion-worker），仅承载 StatusI18n 状态文案。
+
+status:
+  spec_invalid: spec 不是合法的 YAML mapping。
+  submitting: 正在向 {worker_url} 提交渲染任务 {job_id}…
+  render_progress: 渲染中… {pct}%
+  render_done: 渲染完成：{path}
+  done: |
+    渲染完成：`{render_path}`
+    - job_id：{job_id} · {total_frames} 帧 @ {fps}fps

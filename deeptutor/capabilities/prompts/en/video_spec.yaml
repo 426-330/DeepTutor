@@ -1,0 +1,178 @@
+# video_spec capability prompts (en)
+#
+# style_system / style_user_template — v3.1 style block design (JSON output).
+# spec_system / spec_user_template — blueprint slot filling → spec YAML.
+# retry_user_template — validation-driven regeneration with structured errors.
+# clarify — ask_user card copy.
+# status — capability status strings (StatusI18n).
+
+style_system: |
+  You are the visual design director for a "storyboard + narration" explainer
+  video. Design a v3.1 style block and output ONE JSON object only — no other
+  text.
+
+  All five style fields are optional:
+  - theme: built-in theme id, enum "default" | "quant-traditional".
+  - preset: style preset id (whitespace / corner radius / motion intensity),
+    free string, may be omitted.
+  - colors: color overrides. Only these 7 token keys are allowed: primary /
+    secondary / accent / success / warning / danger / neutral. Values must be
+    hex "#RRGGBB" (the only place hex may appear in the whole file). Override
+    only the tokens you need.
+  - fonts: slots title / body / number, each {{"family": ..., "weight": ...}}.
+    family whitelist: "Noto Sans SC" / "Source Han Sans SC" /
+    "Noto Serif SC" / "JetBrains Mono"; weight is an integer 100–900.
+  - effects: transition ({{"type": "fade|wipe-left|slide|zoom|none", "frames": int}}),
+    entrance ("fadeIn|slideUp|scaleIn|typewriter|none"),
+    chart_motion ("drawLine|growBar|countUp|none"),
+    background ({{"type": "none|gradient|particles"}}).
+
+  Design for the topic and audience: restrained colors, clear contrast. When
+  in doubt, omit a field — components have sensible defaults.
+
+style_user_template: |
+  Video topic: {topic}
+  Target audience: {audience}
+  User-selected theme: {theme}
+  User-selected primary color: {primary_color}
+  Font preference: {font_hint}
+  Effects preference: {effects_hint}
+
+  Output the style block JSON.
+
+spec_system: |
+  You are an explainer-video director. Generate a Concept Video DSL v3.1 spec
+  (YAML) by filling the given video_blueprint skeleton. Output ONE ```yaml
+  fenced block and nothing else.
+
+  Hard rules (any violation is rejected by machine validation):
+  1. The scene sequence and every scene's type/layout MUST exactly match the
+     given skeleton — never add/drop scenes or change type/layout. You only
+     fill content slots; no free-form arrangement.
+  2. Top level required: version: "3.1", series, episode (integer >= 1),
+     scenes. fps is enum 24|25|30|60 (default 30). Fill the top-level style
+     block with the given design verbatim. opening is optional:
+     title <= 14 chars, subtitle <= 20 chars.
+  3. Every scene requires the six PageModel fields:
+     - title (scene headline)
+     - question (the question this scene answers)
+     - core_message (the single takeaway, <= 120 chars)
+     - narration: opening / explanation / conclusion — all required strings,
+       spoken-style, TTS-ready, roughly 40–90 chars total per scene
+     - visual: primary required (main visual description),
+       secondary / emphasis optional
+     - transition: next_question (leads into the next scene)
+  4. Fill the content_slots matching each scene type:
+     - opening: hook_line, key_visual, agenda (<= 4 items)
+     - problem_hook: phenomenon, counter_question, promise
+     - concept: definition, analogy, key_points (<= 4 items), misconception
+     - formula: formula (KaTeX), variables (list of {{symbol, meaning}}),
+       numeric_example (REQUIRED! worked example with real numbers), derivation
+     - chart: chart_type (line|bar|pie|scatter|area|histogram|heatmap), data,
+       axes ({{x, y}}), insight
+     - conclusion: key_cards (EXACTLY 3!), takeaway, call_to_action
+     - summary: recap_points (<= 5 items), next_episode, series_cta
+  5. Color discipline: hex is allowed ONLY in top-level style.colors to
+     redefine token values; inside scenes reference tokens only
+     (primary/secondary/accent/success/warning/danger/neutral) — no raw hex.
+  6. duration_frames is optional (integer >= 1, default 90); usually omit it.
+  7. YAML rules: UTF-8, 2-space indent, no tabs; quote strings containing
+     colons or special characters.
+
+  Content quality: one core message per scene; narration matches the visuals;
+  every formula must land on a real-number example; the closing key_cards
+  condense the whole video into exactly 3 take-away cards.
+
+spec_user_template: |
+  Video topic: {topic}
+  Target audience: {audience}
+  Length preset: {preset}
+
+  Scene skeleton (type/layout must be followed exactly, fill slots per scene):
+  {blueprint}
+
+  Layout library reference (regions of each layout):
+  {layouts}
+
+  Style block (use verbatim as top-level style):
+  {style}
+
+  Installed effect skills (background.skill may ONLY reference these ids; if
+  no effect is needed, use background type gradient or none — never invent
+  skill names):
+  {skills}
+
+  Reference material (from URLs/attachments, may be empty):
+  {materials}
+
+  Conversation context:
+  {history_context}
+
+  Output the complete spec YAML (```yaml fenced block).
+
+retry_user_template: |
+  Video topic: {topic}
+  Length preset: {preset}
+
+  Your previous spec failed validation. Fix EVERY error below and output the
+  corrected, complete spec YAML (```yaml fenced block, nothing else):
+
+  Validation errors (scene + field + reason):
+  {validation_errors}
+
+  Scene skeleton (type/layout must be followed exactly):
+  {blueprint}
+
+  Layout library reference:
+  {layouts}
+
+  Style block (use verbatim as top-level style):
+  {style}
+
+  Installed effect skills (background.skill may ONLY reference these ids —
+  never invent skill names):
+  {skills}
+
+  Reference material:
+  {materials}
+
+  Previous YAML:
+  {previous_yaml}
+
+clarify:
+  intro: Before generating the video spec, confirm a few key choices (all optional — defaults apply).
+  q_preset: Video length preset (scene count)?
+  h_preset: Length
+  d_preset_7: Under ~1 minute, single-point explainer
+  d_preset_10: ~1.5–2 minutes, standard episode
+  d_preset_13: ~2.5–3 minutes, deep dive
+  q_audience: Who is the target audience? (affects wording and examples)
+  h_audience: Audience
+  p_audience: e.g. general public / undergrads / practitioners
+  q_theme: Visual theme?
+  h_theme: Theme
+  d_theme_default: Built-in general theme
+  d_theme_quant: Quant-explainer color palette
+  q_color: Primary color (hex, leave empty for theme default)?
+  h_color: Color
+
+status:
+  clarifying: Clarifying audience, length and style preferences...
+  clarified: "Preset: {preset}; theme: {theme}."
+  fetch_failed: "Failed to fetch {url}: {error}"
+  designing: Designing the style block...
+  skills_mounted: "Effect skills mounted: {names}"
+  generating: Filling the blueprint skeleton scene by scene...
+  retrying: "Validation failed — regenerating (attempt {attempt}/{max_attempts})..."
+  validation_failed: "{count} validation issue(s) found."
+  generation_failed: Video spec generation failed (retry limit reached).
+  generation_failed_detail: |
+    Video spec generation failed ({attempts} attempt(s), still invalid):
+    {errors}
+  written: "Spec saved: {path}"
+  done: |
+    Video spec generated and passed both validation layers:
+    - spec: `{spec_path}`
+    - artifact dir: `{video_dir}`
+    - series: {series} ep.{episode} · {preset} · {scene_count} scenes
+  llm_call_failed: LLM call failed.

@@ -38,11 +38,11 @@ def test_factory_dispatches_graphrag_lazily(tmp_path) -> None:
     assert "graphrag" not in sys.modules
 
 
-def test_list_pipelines_includes_graphrag() -> None:
-    entry = next(p for p in list_pipelines() if p["id"] == GRAPHRAG_PROVIDER)
-    assert entry["requires_api_key"] is False
-    # Not installed in the test env.
-    assert entry["configured"] is False
+def test_list_pipelines_excludes_disabled_graphrag() -> None:
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # graphrag 已被 ENABLED_PROVIDERS 禁用，不再出现在 picker 中；
+    # 读取兼容（normalize_provider_name）由下方用例覆盖。
+    assert all(p["id"] != GRAPHRAG_PROVIDER for p in list_pipelines())
 
 
 def test_normalize_provider_keeps_graphrag() -> None:

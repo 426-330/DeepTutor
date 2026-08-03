@@ -99,6 +99,21 @@ async def run_update(
     )
 
     settings = load_memory_settings()
+    # video-generation-system: 裁剪学习域（开关优先，可恢复）
+    # memory.consolidation.enabled 默认 False：跳过 L1→L2/L3 consolidator，
+    # 只保留 L1 trace 事件流。恢复：main.yaml 的 memory.consolidation.enabled=true。
+    if not settings.consolidation.enabled:
+        logger.info(
+            "memory update skipped (consolidation disabled): layer=%s key=%s", layer, key
+        )
+        return UpdateResult(
+            layer=layer,
+            key=key,
+            chunks_processed=0,
+            facts_added=0,
+            refs_dropped=0,
+            no_new_input=True,
+        )
     token = None
     if llm_selection:
         try:

@@ -1,0 +1,12 @@
+version: "3.1"
+series: 语义复查
+episode: 1
+scenes:
+  - type: concept
+    layout: centered-text
+    title: t
+    question: q
+    core_message: m
+    narration: { opening: "", explanation: "x", conclusion: "" }
+    visual: { primary: "" }
+    transition: { next_question: "" }

@@ -1,0 +1,27 @@
+# 别名样本：layout 使用别名（split-screen / cards）→ IR 注入期归一化为
+# split / card-grid-3（templates YAML 的 layout_aliases 表）。
+version: "3.0"
+series: 别名演示
+episode: 1
+scenes:
+  - type: concept
+    layout: split-screen
+    duration_frames: 30
+    title: 别名解析
+    question: split-screen 是什么？
+    core_message: 布局别名在 IR 注入期归一化为规范 id
+    narration: { opening: "", explanation: "别名归一化。", conclusion: "" }
+    visual: { primary: 左右分栏示意 }
+    transition: { next_question: "" }
+    definition: "split-screen 是 split 的别名。"
+  - type: conclusion
+    layout: cards
+    duration_frames: 30
+    title: 收束
+    question: cards 是什么？
+    core_message: cards 归一化为 card-grid-3
+    narration: { opening: "", explanation: "三卡收束。", conclusion: "" }
+    visual: { primary: 三张要点卡 }
+    transition: { next_question: "" }
+    key_cards: [ "要点一", "要点二", "要点三" ]
+    takeaway: "别名都变成了规范布局 id。"

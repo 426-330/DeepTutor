@@ -60,7 +60,22 @@ class ReferenceSettings:
 
 
 @dataclass(frozen=True)
+class ConsolidationSettings:
+    """Master switch for the L2/L3 consolidator write path.
+
+    video-generation-system: 裁剪学习域（开关优先，可恢复）
+    默认关闭：日常运行只写 L1 trace 事件流（外加 write_memory 的显式
+    preference 直写），跳过 L1→L2/L3 的 consolidator ``run_update``。
+    恢复：在 ``data/user/settings/main.yaml`` 的 ``memory:`` 下设置
+    ``consolidation: {enabled: true}``。
+    """
+
+    enabled: bool = False
+
+
+@dataclass(frozen=True)
 class MemorySettings:
+    consolidation: ConsolidationSettings = field(default_factory=ConsolidationSettings)
     update: UpdateSettings = field(default_factory=UpdateSettings)
     audit: AuditSettings = field(default_factory=AuditSettings)
     dedup: DedupSettings = field(default_factory=DedupSettings)
@@ -187,6 +202,7 @@ def _clamp_float(name: str, value: float, default: float) -> float:
 __all__ = [
     "AuditSettings",
     "ChunkingSettings",
+    "ConsolidationSettings",
     "DedupSettings",
     "MemorySettings",
     "MergeSettings",

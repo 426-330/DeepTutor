@@ -1,0 +1,196 @@
+# 全量样本（tasks 5.11/6.9）：13 场景类型 × 13 种布局，30fps × 30f/屏 = 13s。
+# 覆盖 DSL 全量场景枚举与语义复查（§13）合规形态。
+version: "3.1"
+series: 全量演示
+episode: 1
+fps: 30
+
+style:
+  theme: tech-minimal
+  effects:
+    transition: { type: fade, frames: 8 }
+    entrance: fadeIn
+    background: { type: gradient }
+
+opening:
+  title: "复利的真相"
+  subtitle: "时间会放大一切"
+
+scenes:
+  - type: opening
+    layout: full-hero
+    duration_frames: 30
+    title: 复利的真相
+    question: 为什么要讲复利？
+    core_message: 复利是时间杠杆，而不是收益率魔法
+    narration: { opening: "大家好。", explanation: "这期用十三种方式讲清复利。", conclusion: "" }
+    visual: { primary: 指数曲线拔地而起 }
+    transition: { next_question: "复利为什么这么反直觉？" }
+    hook_line: "一年时间看不清的东西，三十年会一清二楚。"
+    key_visual: 指数增长曲线
+    agenda: [ "复利是什么", "数字有多夸张", "怎么用" ]
+
+  - type: problem_hook
+    layout: split
+    duration_frames: 30
+    title: 反直觉的增长
+    question: 复利为什么反直觉？
+    core_message: 人脑按线性外推，复利按指数增长
+    narration: { opening: "", explanation: "直觉会严重低估复利。", conclusion: "" }
+    visual: { primary: 线性 vs 指数两条曲线 }
+    transition: { next_question: "复利到底怎么定义？" }
+    phenomenon: "每天进步1%，一年后不是37%，而是37倍。"
+    counter_question: "为什么直觉差了100倍？"
+    promise: "这期把复利的直觉补齐。"
+
+  - type: concept
+    layout: sidebar-left
+    duration_frames: 30
+    title: 复利的定义
+    question: 复利到底怎么定义？
+    core_message: 复利是利滚利：每期收益加入本金继续生息
+    narration: { opening: "", explanation: "利息再投资就是复利。", conclusion: "" }
+    visual: { primary: 本金滚动雪球 }
+    transition: { next_question: "它是怎么一步步演进的？" }
+    definition: "每一期的收益都并入本金，参与下一期计息。"
+    analogy: "像滚雪球：雪越粘越多，球越滚越快。"
+    key_points: [ "本金在变", "增速在加速", "时间是核心变量" ]
+
+  - type: timeline
+    layout: timeline-horizontal
+    duration_frames: 30
+    title: 三十年演进
+    question: 它是怎么一步步演进的？
+    core_message: 前十年平缓，后十年陡峭，拐点在最后
+    narration: { opening: "", explanation: "复利曲线前缓后陡。", conclusion: "" }
+    visual: { primary: 三十年净值曲线 }
+    transition: { next_question: "复利公式怎么写？" }
+    events:
+      - { label: "第1年", detail: "1.0 → 1.1" }
+      - { label: "第10年", detail: "约 2.6 倍" }
+      - { label: "第20年", detail: "约 6.7 倍" }
+      - { label: "第30年", detail: "约 17.4 倍" }
+
+  - type: formula
+    layout: formula-focus
+    duration_frames: 30
+    title: 复利公式
+    question: 复利公式怎么写？
+    core_message: 终值等于本金乘以一加利率的期数次方
+    narration: { opening: "", explanation: "本金乘一加利率的 n 次方。", conclusion: "" }
+    visual: { primary: 复利公式 }
+    transition: { next_question: "公式在数据上长什么样？" }
+    formula: "FV = PV \\times (1 + r)^n"
+    variables:
+      - { symbol: "PV", meaning: "本金" }
+      - { symbol: "r", meaning: "每期利率" }
+      - { symbol: "n", meaning: "期数" }
+    numeric_example: "10000 * (1 + 0.1)^30"
+
+  - type: chart
+    layout: chart-full
+    duration_frames: 30
+    title: 曲线对比
+    question: 公式在数据上长什么样？
+    core_message: 指数曲线后期远远甩开线性曲线
+    narration: { opening: "", explanation: "看图：后期分叉越来越大。", conclusion: "" }
+    visual: { primary: 复利曲线图 }
+    transition: { next_question: "差距到底有多大？" }
+    chart_type: line
+    data: returns.csv
+    axes: { x: "年份", y: "净值" }
+    insight: "第15年后两条曲线的差距开始失控。"
+
+  - type: big_number
+    layout: number-spotlight
+    duration_frames: 30
+    title: 三十年的倍数
+    question: 差距到底有多大？
+    core_message: 年化10%三十年是17倍，不是3倍
+    narration: { opening: "", explanation: "十七点四倍，这就是三十年。", conclusion: "" }
+    visual: { primary: 巨大数字17.4 }
+    transition: { next_question: "和单利比差多少？" }
+    number: "17.4"
+    unit: "倍"
+    context: "年化 10% 持有 30 年的终值倍数"
+    comparison: "同样的本金，单利只有 4 倍。"
+
+  - type: data_comparison
+    layout: comparison-2col
+    duration_frames: 30
+    title: 复利 vs 单利
+    question: 和单利比差多少？
+    core_message: 时间越长，复利对单利的优势越夸张
+    narration: { opening: "", explanation: "两组数字并排看。", conclusion: "" }
+    visual: { primary: 双列数字对比 }
+    transition: { next_question: "有没有真实案例？" }
+    metrics:
+      - { label: "复利 30 年", value: "17.4", unit: "倍", note: "年化 10%" }
+      - { label: "单利 30 年", value: "4.0", unit: "倍", note: "同样本金" }
+    insight: "同样的本金和利率，结局差 4 倍以上。"
+
+  - type: case_study
+    layout: stacked
+    duration_frames: 30
+    title: 一个定投案例
+    question: 有没有真实案例？
+    core_message: 早开始十年，比多投一倍本金更重要
+    narration: { opening: "", explanation: "看一个定投案例。", conclusion: "" }
+    visual: { primary: 两条定投曲线 }
+    transition: { next_question: "巴菲特怎么看复利？" }
+    case_title: "25 岁开始 vs 35 岁开始"
+    case_background: "同样年化 8%，每月定投 1000 元。"
+    process: [ "25 岁起投：40 年约 350 万", "35 岁起投：30 年约 150 万" ]
+    result: "晚十年开始，终点差两倍以上。"
+    lesson: "时间是最贵的本金。"
+
+  - type: quote
+    layout: quote-center
+    duration_frames: 30
+    title: 巴菲特谈复利
+    question: 巴菲特怎么看复利？
+    core_message: 复利的关键是很长的坡和很湿的雪
+    narration: { opening: "", explanation: "听听巴菲特怎么说。", conclusion: "" }
+    visual: { primary: 巴菲特肖像剪影 }
+    transition: { next_question: "复利要点回顾一下？" }
+    quote_text: "人生就像滚雪球，重要的是找到很湿的雪和很长的坡。"
+    attribution: "沃伦·巴菲特"
+    context: "湿雪是收益率，长坡是时间。"
+
+  - type: recap
+    layout: grid-3x2
+    duration_frames: 30
+    title: 要点回顾
+    question: 复利要点回顾一下？
+    core_message: 复利的三要素：收益率、时间、不中断
+    narration: { opening: "", explanation: "回顾一下今天的要点。", conclusion: "" }
+    visual: { primary: 三要素卡片 }
+    transition: { next_question: "复利结论是什么？" }
+    points: [ "收益再投资", "时间是杠杆", "中断最伤复利" ]
+    bridge: "记住这三点，再看最后的结论。"
+
+  - type: conclusion
+    layout: card-grid-3
+    duration_frames: 30
+    title: 三个结论
+    question: 复利结论是什么？
+    core_message: 早开始、别中断、接受前期平缓
+    narration: { opening: "", explanation: "三个带得走的结论。", conclusion: "" }
+    visual: { primary: 三张结论卡 }
+    transition: { next_question: "下期总结什么？" }
+    key_cards: [ "早开始比多投入重要", "回撤和中断是复利天敌", "前期平缓是常态" ]
+    takeaway: "复利奖励耐心，惩罚打断。"
+    call_to_action: "现在就开始你的第一期。"
+
+  - type: summary
+    layout: title-closing
+    duration_frames: 30
+    title: 下期见
+    question: "下期总结什么？"
+    core_message: 复利是慢变量，慢就是快
+    narration: { opening: "", explanation: "总结全片，下期见。", conclusion: "" }
+    visual: { primary: 系列收尾卡 }
+    transition: { next_question: "" }
+    recap_points: [ "复利是指数增长", "时间是核心变量", "早开始别中断" ]
+    next_episode: "下期讲：回撤为什么是复利的天敌"
+    series_cta: "关注系列，每期一个核心概念"

@@ -1,0 +1,19 @@
+# narration_gen capability prompts (en)
+#
+# This capability makes no LLM calls (TTS + sandboxed alignment only);
+# the file carries StatusI18n status strings.
+
+status:
+  spec_invalid: Spec is not a YAML mapping.
+  spec_invalid_detail: |
+    Spec failed §10 schema validation:
+    {errors}
+  loaded: "Spec loaded: {path} ({count} scenes)."
+  scene_skipped: "Scene {scene}: empty narration, skipped."
+  scene_audio: "Scene {scene}/{total} audio done."
+  tts_failed: "TTS failed at scene {scene}: {error}"
+  align_degraded: Word-level alignment degraded; the renderer will use DSL default durations.
+  done: |
+    Narration done: {audio_count} audio file(s), {align_count} alignment file(s)
+    - audio dir: `{audio_dir}`
+  done_degraded_note: (Alignment degraded — the renderer falls back to DSL default durations; rerun this stage to backfill.)

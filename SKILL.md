@@ -69,6 +69,17 @@ deeptutor kb set-default <name>                     # Set as default KB
 deeptutor kb delete <name> [--force]                # Delete a knowledge base
 ```
 
+### Video Generation (video-generation-system)
+
+```bash
+deeptutor video render <spec_path> [--frames 90:180] [--worker-url http://localhost:3100] [--job-id my-job] [--format rich|json]
+                                                    # Render a spec via remotion-worker (video_compose)
+deeptutor video preview <spec_path> [--format rich|json]
+                                                    # Spec summary: scenes / duration / theme / validation
+deeptutor video spec validate <spec_path> [--format rich|json]
+                                                    # §10 schema + §13 semantic checks (exit 1 on errors)
+```
+
 ### Partners
 
 Partners are IM-connected learning companions (the former "TutorBot").
@@ -99,11 +110,12 @@ deeptutor skill remove <name>                       # Remove a user-layer skill
 
 Maintenance commands for the BookEngine (authoring/reading is via the Web app).
 
-```bash
-deeptutor book list                                 # List all books (flags stale pages)
-deeptutor book health <book_id>                     # Inspect KB drift + log.md health
-deeptutor book refresh-fingerprints <book_id>       # Re-snapshot KB fingerprints
-```
+<!-- video-generation-system: 裁剪学习域（开关优先，可恢复）
+     book 命令组已在 video fork 中摘除（deeptutor_cli/main.py 中注释保留），
+     下列命令当前不可用；恢复后还原为 bash 代码块。 -->
+Disabled in this fork: `deeptutor book list` (list books, flag stale pages),
+`deeptutor book health <book_id>` (inspect KB drift + log.md health),
+`deeptutor book refresh-fingerprints <book_id>` (re-snapshot KB fingerprints).
 
 ### Memory
 

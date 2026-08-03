@@ -58,12 +58,17 @@ Multi-stage pipelines that own the turn:
 | Capability       | Stages                                                |
 | ---------------- | ----------------------------------------------------- |
 | `chat`           | exploring → responding (single agentic loop, default) |
-| `mastery_path`   | responding (Guided Learning — chat loop + mastery tools, gated per topic type) |
+| ~~`mastery_path`~~ | **已在 video fork 中摘除注册**（Guided Learning；`builtin_capabilities.py` 中注释保留，取消注释即恢复） |
 | `deep_solve`     | planning → reasoning → writing                        |
 | `deep_question`  | ideation → generation                                 |
 | `deep_research`  | rephrasing → decomposing → researching → reporting    |
 | `visualize`      | analyzing → generating → reviewing (SVG / Chart.js / Mermaid / HTML; or routes to Manim sub-stages via `render_type`) |
 | `math_animator`  | concept_analysis → concept_design → code_generation → code_retry → summary → render_output |
+| `video_spec`     | clarifying → designing → generating → validating → writing（视频 DSL YAML 生成，video-generation-system M1） |
+| `narration_gen`  | loading → synthesizing → aligning（逐屏 TTS + whisperX 词级对齐，真实时长只进 `.align.json` 不回写 YAML） |
+| `asset_gen`      | loading → illustrating → capturing → collecting（imagegen 插画注入主题色板 + 沙箱截图 + 图表数据/BGM，素材走约定命名 + `assets/manifest.json`） |
+| `video_compose`  | loading → rendering（HTTP 调 remotion-worker `POST /render`，产物收进 `<video_dir>/renders/`，可单独触发改字重渲染） |
+| `video_pipeline` | video_spec → asset_gen → narration_gen → video_compose（产物即契约；`pipeline_state.json` 断点续跑，`start_from` 单阶段起跑） |
 
 All capabilities converge on `emit_capability_result()` in
 `deeptutor/capabilities/_shared.py` so every turn emits the same envelope
@@ -95,6 +100,11 @@ deeptutor kb create my-kb --doc textbook.pdf
 deeptutor memory show
 deeptutor serve --port 8001       # API server only
 deeptutor start                   # backend + frontend together
+
+# Video generation (video-generation-system)
+deeptutor video preview data/videos/<slug>_ep01.yaml   # spec 摘要（本地，不渲染）
+deeptutor video spec validate <spec_path>              # 两层校验（exit 1 即 error）
+deeptutor video render <spec_path> [--frames 90:180]   # 触发 video_compose 渲染
 ```
 
 ## Key Files
@@ -115,6 +125,24 @@ deeptutor start                   # backend + frontend together
 | `deeptutor/app.py`                         | `DeepTutorApp` — Python SDK facade    |
 | `deeptutor_cli/main.py`                    | Typer CLI entry point                |
 | `deeptutor/api/routers/unified_ws.py`      | Unified WebSocket endpoint           |
+| `deeptutor/api/routers/videos.py`          | 视频项目 REST（spec 读写/渲染/产物，D10 布局） |
+
+## Fork 裁剪现状（video-generation-system）
+
+本 fork 按"开关优先、可恢复"原则裁剪了学习域（每处代码改动处均有
+`video-generation-system: 裁剪学习域` 注释）：
+
+- **Capability**：`mastery_path` 未注册（见上表）。
+- **API 路由**：`question` / `question_notebook` / `quiz_judge` / `book` /
+  `co_writer` / `mastery_path` 六个学习域路由不在 `deeptutor/api/main.py`
+  挂载（原行以注释保留）。
+- **CLI**：`deeptutor book` 命令组未注册（`deeptutor_cli/main.py` 中注释保留）。
+- **RAG 引擎**：新 KB 只能绑定 LlamaIndex；pageindex / graphrag / lightrag /
+  lightrag-server / ima 由 `deeptutor/services/rag/factory.py` 的
+  `ENABLED_PROVIDERS` 开关禁用（既有 KB 读取兼容，恢复 = 把引擎名加回集合）。
+- **Memory**：L2/L3 consolidator 默认旁路（只写 L1 trace），开关为
+  `main.yaml` 的 `memory.consolidation.enabled`（默认 `false`，置 `true` 恢复；
+  定义在 `deeptutor/services/memory/settings.py`）。
 
 ## Dependency Layers
 

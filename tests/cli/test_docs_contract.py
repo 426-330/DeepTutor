@@ -74,7 +74,8 @@ def test_internal_docs_links_point_to_existing_pages() -> None:
 
 def test_documented_deeptutor_subcommands_exist() -> None:
     top_level = {
-        "book",
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # "book" 命令组已在 fork 中摘除（SKILL.md 中相应文档同步注释）。
         "chat",
         "config",
         "init",
@@ -89,6 +90,8 @@ def test_documented_deeptutor_subcommands_exist() -> None:
         "session",
         "skill",
         "start",
+        # video-generation-system: video 命令组（tasks 7.3）
+        "video",
     }
     provider_subcommands = {"login"}
 

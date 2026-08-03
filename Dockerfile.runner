@@ -74,6 +74,25 @@ RUN pip install --no-cache-dir \
 #           libreoffice-writer libreoffice-calc libreoffice-impress \
 #       && rm -rf /var/lib/apt/lists/*
 
+# ----- Video pipeline extensions (video-generation-system change) -----------
+# whisperX: word-level timestamp alignment for narration_gen (Stage 3). Torch
+# CPU wheels keep the layer far smaller than CUDA builds; whisperX model
+# weights download on first use into WHISPERX_CACHE — mount a volume there (or
+# pre-bake) to avoid re-downloading per container start.
+RUN pip install --no-cache-dir \
+        torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir whisperx
+ENV WHISPERX_CACHE=/app/data/.cache/whisperx
+
+# Chromium + Playwright: headless web screenshots for asset_gen (Stage 2).
+# PLAYWRIGHT_BROWSERS_PATH is set BEFORE install so the browser lands in a
+# shared path readable by the non-root runner user (default is ~/.cache of the
+# build user, which would be /root and invisible at runtime).
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN pip install --no-cache-dir playwright \
+    && playwright install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
+
 # ----- Non-root user --------------------------------------------------------
 # Commands run as an unprivileged user (uid 1000) so a sandbox escape cannot act
 # as root inside the container. uid 1000 matches the host user that owns the
