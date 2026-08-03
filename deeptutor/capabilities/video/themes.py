@@ -8,8 +8,8 @@ Python 侧再维护一份硬编码色值（单一来源纪律，同 D5）。spec
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
+import re
 
 from deeptutor.runtime.home import PACKAGE_ROOT
 

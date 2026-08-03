@@ -9,11 +9,11 @@ YAML**（D6）。沙箱不可用 / whisperX 失败均可降级：没有 align �
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 import json
 import math
-import shlex
-from dataclasses import dataclass, field
 from pathlib import Path
+import shlex
 from typing import Any
 
 # whisperX 首次运行需下载模型，给予宽松限额。

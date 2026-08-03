@@ -71,6 +71,14 @@ services:
       # this volume (the mount contract below) — never data/system or
       # data/user/settings, which hold auth state and provider API keys.
       - ./data:/app/data
+      # video-generation-system: DSL 契约资产（schema/模板/色卡/技能包），
+      # backend validator 与 video 系 capability 按 /app/video_dsl 读取；
+      # 挂载而非打包进镜像，便于改 DSL 即时生效。
+      - ./video_dsl:/app/video_dsl:ro
+      # 开发期便利：源码挂载，host 改动即时生效（生产镜像仍用 COPY 的代码，
+      # 移除这两行即回镜像内版本）。
+      - ./deeptutor:/app/deeptutor
+      - ./deeptutor_cli:/app/deeptutor_cli
 
     environment:
       # Route untrusted shell exec to the runner sidecar (SYSTEM isolation).
@@ -178,7 +186,7 @@ services:
       - "${DEEPTUTOR_DOCKER_REMOTION_PORT:-3100}:3100"
     environment:
       - PORT=3100
-      - RENDER_OUT_DIR=/app/data/videos
+      - RENDER_OUT_DIR=/app/data/videos/renders
       # BullMQ 队列（tasks 7.2）：默认关闭（内存直跑）。启用：
       #   REMOTION_QUEUE_ENABLED=true docker compose --profile queue up -d
       - QUEUE_ENABLED=${REMOTION_QUEUE_ENABLED:-false}
@@ -186,6 +194,9 @@ services:
       - QUEUE_CONCURRENCY=${REMOTION_QUEUE_CONCURRENCY:-2}
     volumes:
       - ./data/videos:/app/data/videos
+      # video-generation-system: worker parser 按仓库根相对路径解析 video_dsl
+      # （容器内为 /video_dsl），挂载使 schema/模板/skills 即时生效。
+      - ./video_dsl:/video_dsl:ro
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/health"]
       interval: 15s

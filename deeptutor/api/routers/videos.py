@@ -12,15 +12,15 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from pathlib import Path
 import re
 import shutil
-from pathlib import Path
 from typing import Any
 
-import yaml
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import BaseModel, Field
+import yaml
 
 from deeptutor.capabilities.video.paths import VIDEO_SUBDIRS, videos_root
 from deeptutor.capabilities.video.pipeline_state import PipelineState

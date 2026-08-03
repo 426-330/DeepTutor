@@ -71,15 +71,11 @@ class TestPipelineFactory:
 
 class TestRAGServiceClassHelpers:
     def test_list_providers_includes_pageindex(self) -> None:
+        # video-generation-system: 裁剪学习域（开关优先，可恢复）
+        # ENABLED_PROVIDERS 仅含默认引擎（factory.py），picker 只应列出
+        # LlamaIndex；恢复 = 把引擎名加回 ENABLED_PROVIDERS。
         providers = RAGService.list_providers()
-        assert {p["id"] for p in providers} == {
-            DEFAULT_PROVIDER,
-            "pageindex",
-            "graphrag",
-            "lightrag",
-            "lightrag-server",
-            "ima",
-        }
+        assert {p["id"] for p in providers} == {DEFAULT_PROVIDER}
 
     def test_has_provider_default_true(self) -> None:
         assert RAGService.has_provider(DEFAULT_PROVIDER) is True

@@ -16,11 +16,11 @@ BGM 素材库约定：全局库 ``data/videos/bgm/``（.mp3/.wav/.m4a/.aac/.ogg�
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
+from pathlib import Path
 import re
 import shlex
-from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
 _URL_RE = re.compile(r"https?://[^\s<>\"')\]]+")

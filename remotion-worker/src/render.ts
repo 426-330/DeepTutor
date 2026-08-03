@@ -111,8 +111,11 @@ export async function renderToMp4(options: RenderJobOptions): Promise<string> {
     // Seamless AAC 仅片段渲染开启（拼接在 splice 侧按精确时长裁剪，见 partial.ts）。
     forSeamlessAacConcatenation: Boolean(frameRange),
     // three.js/R3F 技能背景需要可用的 WebGL context（task 6.2）：
-    // headless 默认 Vulkan/SwiftShader 可能创建失败，angle 是官方推荐。
-    chromiumOptions: {gl: 'angle'},
+    // headless 默认 Vulkan/SwiftShader 可能创建失败。macOS 本机 angle 可用；
+    // Linux 容器（arm64）angle 创建 WebGL context 失败，需 swangle
+    // （SwiftShader ANGLE 软件渲染）。REMOTION_GL 可覆盖，默认 swangle
+    // （软件渲染，处处可用；有 GPU 的环境可显式设 angle 提速）。
+    chromiumOptions: {gl: (process.env.REMOTION_GL || 'swangle') as 'angle' | 'swangle'},
     onProgress: ({progress}) => {
       onProgress?.(progress);
     },

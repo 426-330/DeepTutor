@@ -93,6 +93,12 @@ RUN pip install --no-cache-dir playwright \
     && playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/*
 
+# ffmpeg: whisperX shells out to ffmpeg for audio decode (missing it fails with
+# FileNotFoundError: 'ffmpeg'). Separate layer so the heavy pip layers above
+# stay cached.
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
 # ----- Non-root user --------------------------------------------------------
 # Commands run as an unprivileged user (uid 1000) so a sandbox escape cannot act
 # as root inside the container. uid 1000 matches the host user that owns the

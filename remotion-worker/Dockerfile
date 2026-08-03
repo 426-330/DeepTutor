@@ -19,7 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libpango-1.0-0 \
     libcairo2 \
+    fonts-noto-cjk \
   && rm -rf /var/lib/apt/lists/*
+
+# fonts-noto-cjk: CJK glyphs for headless Chrome. Without it every Chinese
+# character in the spec renders as tofu boxes (□). Noto Sans SC inside this
+# package is also the DSL font whitelist's body/title family, and it is OFL —
+# safe to redistribute inside the image (see 视频生成计划 §十 字体风险).
 
 WORKDIR /app
 

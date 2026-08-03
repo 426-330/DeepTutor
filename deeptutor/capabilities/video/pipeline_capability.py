@@ -246,7 +246,12 @@ class VideoPipelineCapability(BaseCapability):
         try:
             if reference:
                 return resolve_spec_path(reference)
-            return latest_spec_path()
+            # latest 回落仅在显式续跑（start_from）时启用：全新一句话出片
+            # 必须走 video_spec 建新项目，否则会错误复用上一个项目的
+            # pipeline_state 导致全部阶段 "already done, skipped"（实测 bug）。
+            if str(overrides.get("start_from") or "").strip():
+                return latest_spec_path()
+            return None
         except FileNotFoundError:
             return None
 

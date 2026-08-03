@@ -14,6 +14,32 @@ from deeptutor.knowledge.kb_types import CONNECTED_KB_TYPES, LIGHTRAG_SERVER_KB_
 from deeptutor.knowledge.manager import KnowledgeBaseManager
 
 
+@pytest.fixture(autouse=True)
+def _allow_tested_providers(monkeypatch):
+    """放行被测引擎的注册门禁。
+
+    video-generation-system: 裁剪学习域（开关优先，可恢复）——本文件测的是
+    manager 机制本体（指针写入/去重/元数据脱敏/orphan 清理），不是门禁；
+    lightrag-server 已被 factory.ENABLED_PROVIDERS 禁用，这里在测试域内放行。
+    门禁本体由下方 test_register_rejects_disabled_engine 覆盖；
+    恢复 = 把引擎名加回 factory.ENABLED_PROVIDERS。
+    """
+    monkeypatch.setattr(
+        "deeptutor.knowledge.manager.ENABLED_PROVIDERS",
+        frozenset({"llamaindex", "lightrag-server"}),
+    )
+
+
+def test_register_rejects_disabled_engine(monkeypatch, tmp_path) -> None:
+    """门禁本体：真实 ENABLED_PROVIDERS（仅 llamaindex）下注册 server KB 被拒。"""
+    from deeptutor.services.rag.factory import ENABLED_PROVIDERS
+
+    monkeypatch.setattr("deeptutor.knowledge.manager.ENABLED_PROVIDERS", ENABLED_PROVIDERS)
+    manager = KnowledgeBaseManager(base_dir=str(tmp_path / "kbs"))
+    with pytest.raises(ValueError, match="disabled"):
+        manager.register_lightrag_server_kb("Remote", "http://localhost:9621")
+
+
 def test_lightrag_server_is_a_connected_type() -> None:
     assert LIGHTRAG_SERVER_KB_TYPE in CONNECTED_KB_TYPES
 

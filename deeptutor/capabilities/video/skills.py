@@ -12,10 +12,10 @@ capability 注入 LLM 上下文与校验 ``background.skill`` 引用。
 
 from __future__ import annotations
 
-import json
-import re
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
+import re
 from typing import Any
 
 import yaml

@@ -16,6 +16,33 @@ import pytest
 from deeptutor.knowledge.manager import KnowledgeBaseManager
 
 
+@pytest.fixture(autouse=True)
+def _allow_tested_providers(monkeypatch):
+    """放行被测引擎的注册门禁。
+
+    video-generation-system: 裁剪学习域（开关优先，可恢复）——本文件测的是
+    manager 机制本体（指针写入/去重/元数据/orphan 清理），不是门禁；
+    graphrag 已被 factory.ENABLED_PROVIDERS 禁用，这里在测试域内放行。
+    门禁本体由下方 test_register_rejects_disabled_engine 覆盖；
+    恢复 = 把引擎名加回 factory.ENABLED_PROVIDERS。
+    """
+    monkeypatch.setattr(
+        "deeptutor.knowledge.manager.ENABLED_PROVIDERS",
+        frozenset({"llamaindex", "graphrag"}),
+    )
+
+
+def test_register_rejects_disabled_engine(monkeypatch, tmp_path: Path) -> None:
+    """门禁本体：真实 ENABLED_PROVIDERS（仅 llamaindex）下 linked 绑 graphrag 被拒。"""
+    from deeptutor.services.rag.factory import ENABLED_PROVIDERS
+
+    monkeypatch.setattr("deeptutor.knowledge.manager.ENABLED_PROVIDERS", ENABLED_PROVIDERS)
+    ext = _external_index(tmp_path)
+    manager = KnowledgeBaseManager(base_dir=str(tmp_path / "kbs"))
+    with pytest.raises(ValueError, match="disabled"):
+        manager.register_linked_kb("Linked", str(ext), "graphrag")
+
+
 def _external_index(tmp_path: Path) -> Path:
     """A self-contained external folder holding a ready LlamaIndex version."""
     ext = tmp_path / "external_kb"

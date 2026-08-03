@@ -13,10 +13,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import typer
-import yaml
 from rich.console import Console
 from rich.table import Table
+import typer
+import yaml
 
 console = Console()
 

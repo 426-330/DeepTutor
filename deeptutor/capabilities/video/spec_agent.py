@@ -35,7 +35,17 @@ def extract_yaml(text: str) -> str:
 
 
 class VideoSpecAgent(BaseAgent):
-    """style 设计 + spec YAML 生成（Blocking 调用：YAML 只有整体可用）。"""
+    """style 设计 + spec YAML 生成（Blocking 调用：YAML 只有整体可用）。
+
+    max_tokens 显式放大：LLM 服务默认 4096（openai_compat_provider），
+    对 DeepSeek V4 Pro / R1 这类推理模型，reasoning_content 会独吞整个
+    token 预算，导致 content 为空（实测：finish_reason=length、content=""
+    → "LLM 未产出 YAML 内容"）。spec 生成给 16384（7-13 屏 YAML + 推理
+    开销），style JSON 给 8192。
+    """
+
+    _SPEC_MAX_TOKENS = 16384
+    _STYLE_MAX_TOKENS = 8192
 
     def __init__(
         self,
@@ -66,23 +76,36 @@ class VideoSpecAgent(BaseAgent):
         primary_color: str,
         font_hint: str,
         effects_hint: str,
+        skills_text: str = "",
     ) -> dict[str, Any]:
-        """生成顶层 style 设计块（JSON）。失败/非法返回空 dict（用默认主题）。"""
+        """生成顶层 style 设计块（JSON）。失败/非法返回空 dict（用默认主题）。
+
+        ``skills_text`` 为已安装特效技能约束：全局 background 特效在此阶段
+        决策，技能绑定（skill + params）必须在此写入，否则渲染层无组件可用。
+        """
         system_prompt = self.get_prompt("style_system")
         user_template = self.get_prompt("style_user_template")
         if not system_prompt or not user_template:
             return {}
+        user_prompt = user_template.format(
+            topic=topic.strip(),
+            audience=audience.strip() or "(default)",
+            theme=theme.strip() or "default",
+            primary_color=primary_color.strip() or "(none)",
+            font_hint=font_hint.strip() or "(default)",
+            effects_hint=effects_hint.strip() or "(default)",
+        )
+        if skills_text.strip():
+            user_prompt += (
+                "\n\n已安装特效技能（若使用 background.type=particles 等特效，"
+                "必须同时给出 skill 标识与 params，颜色参数只用 token）：\n"
+                + skills_text.strip()
+            )
         response = await self.call_llm(
-            user_prompt=user_template.format(
-                topic=topic.strip(),
-                audience=audience.strip() or "(default)",
-                theme=theme.strip() or "default",
-                primary_color=primary_color.strip() or "(none)",
-                font_hint=font_hint.strip() or "(default)",
-                effects_hint=effects_hint.strip() or "(default)",
-            ),
+            user_prompt=user_prompt,
             system_prompt=system_prompt,
             response_format={"type": "json_object"},
+            max_tokens=self._STYLE_MAX_TOKENS,
             stage="designing",
             trace_meta=build_trace_metadata(
                 call_id=new_call_id("video-style"),
@@ -166,6 +189,7 @@ class VideoSpecAgent(BaseAgent):
         response = await self.call_llm(
             user_prompt=user_prompt,
             system_prompt=system_prompt,
+            max_tokens=self._SPEC_MAX_TOKENS,
             stage=stage,
             trace_meta=build_trace_metadata(
                 call_id=new_call_id("video-spec"),

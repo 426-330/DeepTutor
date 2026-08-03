@@ -129,9 +129,10 @@ class NarrationGenCapability(BaseCapability):
                 stage="loading",
             )
 
-        # ── Stage 2: 逐屏 TTS ────────────────────────────────────────────
+        # ── Stage 2: 逐屏 TTS（失败降级不阻断：无配音也能出无声片，D6）────
         voice = str(overrides.get("voice") or "").strip() or None
         audio_files: list[str] = []
+        degraded: list[str] = []
         async with stream.stage("synthesizing", source=self.name):
             from deeptutor.services.voice import VoiceProviderError, synthesize_speech
 
@@ -158,30 +159,23 @@ class NarrationGenCapability(BaseCapability):
                         voice=voice,
                         response_format="wav",
                     )
-                except VoiceProviderError as exc:
-                    await stream.error(
-                        i18n.t(
-                            "tts_failed",
-                            f"TTS failed at scene {idx}: {exc}",
+                except (VoiceProviderError, ValueError) as exc:
+                    # 未配置 TTS（resolve_tts_runtime_config 抛 ValueError）或
+                    # provider 故障（VoiceProviderError）：记 degraded 继续下一屏，
+                    # 渲染层回退 DSL 默认时长出无声片，不再硬失败（此前
+                    # "No active TTS model is configured" 会中断整个 pipeline）。
+                    degraded.append(f"s{idx:02d}: {exc}")
+                    await stream.progress(
+                        message=i18n.t(
+                            "tts_degraded",
+                            f"Scene {idx}: TTS degraded ({exc}), continuing without audio.",
                             scene=idx,
                             error=str(exc),
                         ),
                         source=self.name,
                         stage="synthesizing",
                     )
-                    await emit_capability_result(
-                        stream,
-                        {
-                            "response": str(exc),
-                            "ok": False,
-                            "spec_path": str(spec_path),
-                            "audio_files": audio_files,
-                            "failed_scene": idx,
-                        },
-                        source=self.name,
-                        usage=usage,
-                    )
-                    return
+                    continue
                 wav_path = audio_dir / f"s{idx:02d}.wav"
                 wav_path.write_bytes(audio_bytes)
                 audio_files.append(str(wav_path))
@@ -200,7 +194,6 @@ class NarrationGenCapability(BaseCapability):
 
         # ── Stage 3: whisperX 词级对齐（可降级） ─────────────────────────
         align_files: list[str] = []
-        degraded: list[str] = []
         skip_align = bool(overrides.get("skip_align", False))
         language = str(overrides.get("language") or context.language or "").split("-")[0]
         async with stream.stage("aligning", source=self.name):

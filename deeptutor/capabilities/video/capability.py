@@ -15,8 +15,8 @@
 from __future__ import annotations
 
 import logging
-import re
 from pathlib import Path
+import re
 from typing import Any
 
 import yaml
@@ -125,18 +125,12 @@ class VideoSpecCapability(BaseCapability):
                 source=self.name,
                 stage="designing",
             )
-            style = await agent.design_style(
-                topic=context.user_message,
-                audience=prefs.audience,
-                theme=prefs.theme,
-                primary_color=prefs.primary_color,
-                font_hint=prefs.font_hint,
-                effects_hint=prefs.effects_hint,
-            )
-            style = self._apply_pref_overrides(style, prefs)
-
             # 特效技能挂载（D8/6.3/6.6）：overrides skills > project.yaml >
             # 用户消息点名 > always: true；注入约束文本，校验用全量目录。
+            # 必须先于 design_style 解析：全局 background 特效（含 skill
+            # 绑定）在 style 设计阶段产出，技能约束要一起喂给它（此前
+            # skills_text 只进 generate_spec，导致 style 里 particles 无
+            # skill 绑定、渲染降级为渐变——6.8 验收实测暴露）。
             catalog = scan_effect_skills()
             known_skills = set(catalog)
             selected_skills, skill_warnings = self._resolve_skills(
@@ -155,6 +149,17 @@ class VideoSpecCapability(BaseCapability):
                 )
             for warning in skill_warnings:
                 logger.warning("video_spec skill mount: %s", warning)
+
+            style = await agent.design_style(
+                topic=context.user_message,
+                audience=prefs.audience,
+                theme=prefs.theme,
+                primary_color=prefs.primary_color,
+                font_hint=prefs.font_hint,
+                effects_hint=prefs.effects_hint,
+                skills_text=skills_text,
+            )
+            style = self._apply_pref_overrides(style, prefs)
 
         # ── Stage 3+4: 骨架槽位填充 → 两层校验 → 回炉 ───────────────────
         history_context = str(

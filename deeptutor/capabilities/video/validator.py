@@ -13,8 +13,8 @@ capability 回炉时注入 LLM 提示词。
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
+import re
 from typing import Any
 
 from deeptutor.capabilities.video.schema import load_schema

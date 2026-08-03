@@ -12,9 +12,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import re
 import unicodedata
-from pathlib import Path
 
 VIDEO_SUBDIRS = ("data", "assets", "audio", "renders")
 
