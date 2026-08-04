@@ -7,6 +7,7 @@ pipeline 无人值守路径传 ``skip_clarify: true``（或直接给值）即跳
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -137,21 +138,49 @@ async def clarify_prefs(
     if payload is None:
         return base
 
-    # 前端从 tool_result.metadata.ask_user 渲染提问卡片（同 chat 路径）。
+    # 前端从 tool_result.metadata.tool_metadata.ask_user 渲染提问卡片
+    # （与 chat 的 ask_user 工具同一事件形状，tool_dispatch 包一层
+    # tool_metadata；AskUserOptions.extractAskUserPayload 只认这个嵌套
+    # 位置，顶层 metadata.ask_user 不渲染——Web 端不显示卡片的根因）。
     await stream.tool_result(
         tool_name="ask_user",
         result="; ".join(q.prompt for q in payload.questions),
         source=source,
         stage="clarifying",
-        metadata={"ask_user": payload.to_dict()},
+        metadata={"tool_metadata": {"ask_user": payload.to_dict()}},
     )
-    raw_reply = await waiter()
+    # 等待用户回复，但必须有超时兜底：Web 端若未渲染/未回答卡片，
+    # 无限等待会把整个 pipeline 挂死（实测：turn 停在 clarifying 无任何
+    # 后续事件）。超时或回复为空 → 落默认值继续。
+    # overrides["clarify_timeout_s"] 可调（默认 120s；0/负数 = 不限时）。
+    timeout_s = float(overrides.get("clarify_timeout_s", 120) or 0)
+    try:
+        if timeout_s > 0:
+            raw_reply = await asyncio.wait_for(waiter(), timeout=timeout_s)
+        else:
+            raw_reply = await waiter()
+    except (TimeoutError, asyncio.TimeoutError):
+        # 通知前端卡片已了结（无答案），并落默认值继续。
+        await stream.progress(
+            message="澄清等待超时，使用默认配置继续 / Clarification timed out; continuing with defaults.",
+            source=source,
+            stage="clarifying",
+            metadata={"ask_user_resolved": True, "answers": []},
+        )
+        return base
     if raw_reply is None:
         return base
 
     from deeptutor.agents.chat.agentic_pipeline import _normalise_user_reply
 
     reply_text, answers = _normalise_user_reply(raw_reply)
+    # 通知前端卡片已了结（带答案折叠为已答状态）。
+    await stream.progress(
+        message="",
+        source=source,
+        stage="clarifying",
+        metadata={"ask_user_resolved": True, "answers": answers or []},
+    )
     merged = dict(base.answers)
     for entry in answers or []:
         merged[entry["questionId"]] = entry["text"].strip()

@@ -73,26 +73,9 @@ const PRIMARY_NAV: NavEntry[] = [
     icon: Bot,
     tooltipKey: "Agents tooltip",
   },
-  {
-    href: "/co-writer",
-    label: "Co-Writer",
-    icon: PenLine,
-    tooltipKey: "Co-Writer tooltip",
-    requires: "llm",
-  },
-  {
-    href: "/book",
-    label: "Book",
-    icon: Library,
-    tooltipKey: "Book tooltip",
-    requires: "llm",
-  },
-  {
-    href: "/space",
-    label: "Learning Space",
-    icon: LayoutGrid,
-    tooltipKey: "Space tooltip",
-  },
+  // video-generation-system: 裁剪学习域（开关优先）——Co-Writer / Book /
+  // Learning Space 的后端路由已摘除，导航入口同步移除（原配置见 git 历史，
+  // 恢复路由后加回即可）。
 ];
 
 const SECONDARY_NAV: NavEntry[] = [

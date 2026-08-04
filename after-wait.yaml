@@ -1,0 +1,465 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - link "DeepTutor DeepTutor" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "DeepTutor" [ref=e6]
+          - img "DeepTutor" [ref=e7]
+        - button "Collapse sidebar" [ref=e8] [cursor=pointer]:
+          - img [ref=e9]
+      - navigation [ref=e12]:
+        - generic [ref=e13]:
+          - link "Home" [ref=e14] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e15]
+            - generic [ref=e18]: Home
+          - link "Videos" [ref=e19] [cursor=pointer]:
+            - /url: /videos
+            - img [ref=e20]
+            - generic [ref=e25]: Videos
+          - link "Partners" [ref=e26] [cursor=pointer]:
+            - /url: /partners
+            - img [ref=e27]
+            - generic [ref=e29]: Partners
+          - link "My Agents" [ref=e30] [cursor=pointer]:
+            - /url: /agents
+            - img [ref=e31]
+            - generic [ref=e34]: My Agents
+          - link "Co-Writer" [ref=e35] [cursor=pointer]:
+            - /url: /co-writer
+            - img [ref=e36]
+            - generic [ref=e38]: Co-Writer
+          - link "Book" [ref=e39] [cursor=pointer]:
+            - /url: /book
+            - img [ref=e40]
+            - generic [ref=e42]: Book
+          - link "Learning Space" [ref=e43] [cursor=pointer]:
+            - /url: /space
+            - img [ref=e44]
+            - generic [ref=e49]: Learning Space
+      - generic [ref=e50]:
+        - button "Hide recents" [expanded] [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]: Recents
+          - img [ref=e53]
+        - generic [ref=e56]:
+          - button "把这篇文章的核心内容做成一期科普视频：https://www.zhihu.com/pin/20126... Rename chat Delete chat" [ref=e153] [cursor=pointer]:
+            - img [ref=e154]
+            - generic [ref=e156]: 把这篇文章的核心内容做成一期科普视频：https://www.zhihu.com/pin/20126...
+            - generic [ref=e157]:
+              - button "Rename chat" [ref=e158]:
+                - img [ref=e159]
+              - button "Delete chat" [ref=e162]:
+                - img [ref=e163]
+          - 'button "Generate a video for series \"青春无价\" episode 3: 校园、同... Rename chat Delete chat" [ref=e166] [cursor=pointer]':
+            - img [ref=e167]
+            - generic [ref=e169]: "Generate a video for series \"青春无价\" episode 3: 校园、同..."
+            - generic [ref=e170]:
+              - button "Rename chat" [ref=e171]:
+                - img [ref=e172]
+              - button "Delete chat" [ref=e175]:
+                - img [ref=e176]
+          - button "把这篇文章的核心内容做成一期科普短视频：https://zh.wikipedia.org/wiki/... Rename chat Delete chat" [ref=e179] [cursor=pointer]:
+            - img [ref=e180]
+            - generic [ref=e182]: 把这篇文章的核心内容做成一期科普短视频：https://zh.wikipedia.org/wiki/...
+            - generic [ref=e183]:
+              - button "Rename chat" [ref=e184]:
+                - img [ref=e185]
+              - button "Delete chat" [ref=e188]:
+                - img [ref=e189]
+          - button "渲染 Rename chat Delete chat" [ref=e192] [cursor=pointer]:
+            - img [ref=e193]
+            - generic [ref=e195]: 渲染
+            - generic [ref=e196]:
+              - button "Rename chat" [ref=e197]:
+                - img [ref=e198]
+              - button "Delete chat" [ref=e201]:
+                - img [ref=e202]
+          - button "做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。 Rename chat Delete chat" [ref=e205] [cursor=pointer]:
+            - img [ref=e206]
+            - generic [ref=e208]: 做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。
+            - generic [ref=e209]:
+              - button "Rename chat" [ref=e210]:
+                - img [ref=e211]
+              - button "Delete chat" [ref=e214]:
+                - img [ref=e215]
+          - button "New chat Rename chat Delete chat" [ref=e218] [cursor=pointer]:
+            - img [ref=e219]
+            - generic [ref=e221]: New chat
+            - generic [ref=e222]:
+              - button "Rename chat" [ref=e223]:
+                - img [ref=e224]
+              - button "Delete chat" [ref=e227]:
+                - img [ref=e228]
+          - button "续跑 Rename chat Delete chat" [ref=e231] [cursor=pointer]:
+            - img [ref=e232]
+            - generic [ref=e234]: 续跑
+            - generic [ref=e235]:
+              - button "Rename chat" [ref=e236]:
+                - img [ref=e237]
+              - button "Delete chat" [ref=e240]:
+                - img [ref=e241]
+          - button "做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。 Rename chat Delete chat" [ref=e244] [cursor=pointer]:
+            - img [ref=e245]
+            - generic [ref=e248]: 做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。
+            - generic [ref=e249]:
+              - button "Rename chat" [ref=e250]:
+                - img [ref=e251]
+              - button "Delete chat" [ref=e254]:
+                - img [ref=e255]
+          - button "做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。 Rename chat Delete chat" [ref=e258] [cursor=pointer]:
+            - img [ref=e259]
+            - generic [ref=e264]: 做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。
+            - generic [ref=e265]:
+              - button "Rename chat" [ref=e266]:
+                - img [ref=e267]
+              - button "Delete chat" [ref=e270]:
+                - img [ref=e271]
+          - button "做一期科普短视频：介绍太阳系——八大行星各有什么特点？面向小学生，风格活泼。 Rename chat Delete chat" [ref=e274] [cursor=pointer]:
+            - img [ref=e275]
+            - generic [ref=e277]: 做一期科普短视频：介绍太阳系——八大行星各有什么特点？面向小学生，风格活泼。
+            - generic [ref=e278]:
+              - button "Rename chat" [ref=e279]:
+                - img [ref=e280]
+              - button "Delete chat" [ref=e283]:
+                - img [ref=e284]
+          - button "做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。 Rename chat Delete chat" [ref=e287] [cursor=pointer]:
+            - img [ref=e288]
+            - generic [ref=e292]: 做一期短视频：什么是黑洞？开场要有科技感粒子波浪特效。
+            - generic [ref=e293]:
+              - button "Rename chat" [ref=e294]:
+                - img [ref=e295]
+              - button "Delete chat" [ref=e298]:
+                - img [ref=e299]
+          - button "做一期科普短视频：介绍太阳系——八大行星各有什么特点？面向小学生，风格活泼。 Rename chat Delete chat" [ref=e302] [cursor=pointer]:
+            - img [ref=e303]
+            - generic [ref=e305]: 做一期科普短视频：介绍太阳系——八大行星各有什么特点？面向小学生，风格活泼。
+            - generic [ref=e306]:
+              - button "Rename chat" [ref=e307]:
+                - img [ref=e308]
+              - button "Delete chat" [ref=e311]:
+                - img [ref=e312]
+          - button "重渲染 Rename chat Delete chat" [ref=e315] [cursor=pointer]:
+            - img [ref=e316]
+            - generic [ref=e318]: 重渲染
+            - generic [ref=e319]:
+              - button "Rename chat" [ref=e320]:
+                - img [ref=e321]
+              - button "Delete chat" [ref=e324]:
+                - img [ref=e325]
+          - button "New chat Rename chat Delete chat" [ref=e328] [cursor=pointer]:
+            - img [ref=e329]
+            - generic [ref=e334]: New chat
+            - generic [ref=e335]:
+              - button "Rename chat" [ref=e336]:
+                - img [ref=e337]
+              - button "Delete chat" [ref=e340]:
+                - img [ref=e341]
+          - button "做一期科普短视频：什么是复利？为什么它被爱因斯坦称为世界第八大奇迹？面向理财新手，风格轻松。 Rename chat Delete chat" [ref=e344] [cursor=pointer]:
+            - img [ref=e345]
+            - generic [ref=e347]: 做一期科普短视频：什么是复利？为什么它被爱因斯坦称为世界第八大奇迹？面向理财新手，风格轻松。
+            - generic [ref=e348]:
+              - button "Rename chat" [ref=e349]:
+                - img [ref=e350]
+              - button "Delete chat" [ref=e353]:
+                - img [ref=e354]
+          - button "New chat Rename chat Delete chat" [ref=e357] [cursor=pointer]:
+            - img [ref=e358]
+            - generic [ref=e360]: New chat
+            - generic [ref=e361]:
+              - button "Rename chat" [ref=e362]:
+                - img [ref=e363]
+              - button "Delete chat" [ref=e366]:
+                - img [ref=e367]
+          - button "做一期科普短视频：什么是复利？为什么它被爱因斯坦称为世界第八大奇迹？面向理财新手，风格轻松。 Rename chat Delete chat" [ref=e370] [cursor=pointer]:
+            - img [ref=e371]
+            - generic [ref=e375]: 做一期科普短视频：什么是复利？为什么它被爱因斯坦称为世界第八大奇迹？面向理财新手，风格轻松。
+            - generic [ref=e376]:
+              - button "Rename chat" [ref=e377]:
+                - img [ref=e378]
+              - button "Delete chat" [ref=e381]:
+                - img [ref=e382]
+          - button "New chat Rename chat Delete chat" [ref=e385] [cursor=pointer]:
+            - img [ref=e386]
+            - generic [ref=e388]: New chat
+            - generic [ref=e389]:
+              - button "Rename chat" [ref=e390]:
+                - img [ref=e391]
+              - button "Delete chat" [ref=e394]:
+                - img [ref=e395]
+          - button "New chat Rename chat Delete chat" [ref=e398] [cursor=pointer]:
+            - img [ref=e399]
+            - generic [ref=e402]: New chat
+            - generic [ref=e403]:
+              - button "Rename chat" [ref=e404]:
+                - img [ref=e405]
+              - button "Delete chat" [ref=e408]:
+                - img [ref=e409]
+      - generic [ref=e57]:
+        - link "Memory" [ref=e58] [cursor=pointer]:
+          - /url: /memory
+          - img [ref=e59]
+          - generic [ref=e67]: Memory
+        - link "Knowledge Center" [ref=e68] [cursor=pointer]:
+          - /url: /knowledge
+          - img [ref=e69]
+          - generic [ref=e71]: Knowledge Center
+        - link "Settings" [ref=e72] [cursor=pointer]:
+          - /url: /settings
+          - img [ref=e73]
+          - generic [ref=e76]: Settings
+        - generic [ref=e77]:
+          - link "v1.5.6" [ref=e78] [cursor=pointer]:
+            - /url: https://github.com/HKUDS/DeepTutor/releases
+            - generic [ref=e79]: v1.5.6
+          - link "Docs" [ref=e80] [cursor=pointer]:
+            - /url: https://deeptutor.info/
+            - img [ref=e81]
+          - link "GitHub" [ref=e83] [cursor=pointer]:
+            - /url: https://github.com/HKUDS/DeepTutor
+            - img [ref=e84]
+    - main [ref=e87]:
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - button "把这篇文章的核心内容做成一期科普视频：https://www.zhihu.com/pin/20126..." [ref=e412] [cursor=pointer]:
+            - generic [ref=e92]: 把这篇文章的核心内容做成一期科普视频：https://www.zhihu.com/pin/20126...
+            - img [ref=e413]
+          - generic [ref=e93]:
+            - generic [ref=e94]:
+              - button "Save to Notebook" [ref=e95] [cursor=pointer]:
+                - img [ref=e96]
+              - tooltip: Save to Notebook
+            - generic [ref=e98]:
+              - button "Download Markdown" [ref=e99] [cursor=pointer]:
+                - img [ref=e100]
+              - tooltip: Download chat history as Markdown
+            - generic [ref=e103]:
+              - button "Activity" [ref=e104] [cursor=pointer]:
+                - img [ref=e105]
+              - tooltip: Session activity, attachments & previews
+        - generic [ref=e107]:
+          - generic [ref=e109]:
+            - generic [ref=e416]:
+              - generic [ref=e418]: video_pipeline
+              - generic [ref=e420]: 把这篇文章的核心内容做成一期科普视频：https://www.zhihu.com/pin/2012689070699078077
+              - generic [ref=e421]:
+                - generic [ref=e422]:
+                  - button "Copy" [ref=e423] [cursor=pointer]:
+                    - img [ref=e424]
+                  - tooltip: Copy
+                - generic [ref=e427]:
+                  - button "Edit" [ref=e428] [cursor=pointer]:
+                    - img [ref=e429]
+                  - tooltip: Edit
+            - generic [ref=e433]:
+              - generic [ref=e435]: video_pipeline
+              - generic [ref=e437]: 把这篇文章的核心内容做成一期科普视频：https://www.zhihu.com/pin/2012689070699078077
+              - generic [ref=e438]:
+                - generic [ref=e439]:
+                  - button "Copy" [ref=e440] [cursor=pointer]:
+                    - img [ref=e441]
+                  - tooltip: Copy
+                - generic [ref=e444]:
+                  - button "Edit" [ref=e445] [cursor=pointer]:
+                    - img [ref=e446]
+                  - tooltip: Edit
+            - generic [ref=e449]:
+              - generic [ref=e450]:
+                - button "Done · 7m 11s" [ref=e451] [cursor=pointer]:
+                  - img [ref=e452]
+                  - generic [ref=e461]: Done
+                  - generic [ref=e462]: · 7m 11s
+                  - img [ref=e463]
+                - generic [ref=e466]:
+                  - button "Style design" [ref=e468] [cursor=pointer]:
+                    - img [ref=e470]
+                    - generic [ref=e485]: Style design
+                    - img [ref=e486]
+                  - button "Spec generation" [ref=e489] [cursor=pointer]:
+                    - img [ref=e491]
+                    - generic [ref=e506]: Spec generation
+                    - img [ref=e507]
+                  - button "Spec repair" [ref=e510] [cursor=pointer]:
+                    - img [ref=e512]
+                    - generic [ref=e527]: Spec repair
+                    - img [ref=e528]
+                  - button "Spec repair" [ref=e531] [cursor=pointer]:
+                    - img [ref=e533]
+                    - generic [ref=e548]: Spec repair
+                    - img [ref=e549]
+              - button "Your answers · 2/4 answered" [ref=e552] [cursor=pointer]:
+                - generic [ref=e553]:
+                  - img [ref=e554]
+                  - heading "Your answers" [level=3] [ref=e556]
+                  - generic [ref=e557]: · 2/4 answered
+              - article [ref=e558]:
+                - generic [ref=e559]:
+                  - paragraph [ref=e560]: "Video spec generated and passed both validation layers:"
+                  - list [ref=e561]:
+                    - listitem [ref=e562]:
+                      - text: "spec:"
+                      - code [ref=e563]: /app/data/videos/quick-science_ep01.yaml
+                    - listitem [ref=e564]:
+                      - text: "artifact dir:"
+                      - code [ref=e565]: /app/data/videos/quick-science_ep01
+                    - listitem [ref=e566]:
+                      - text: "series: Quick Science ep.1 · short-7 · 7 scenes Assets done: 0 asset(s), manifest:"
+                      - code [ref=e567]: /app/data/videos/quick-science_ep01/assets/manifest.json
+                      - text: "(8 degraded item(s) — see manifest.degraded.)Narration done: 0 audio file(s), 0 alignment file(s)"
+                    - listitem [ref=e568]:
+                      - text: "audio dir:"
+                      - code [ref=e569]: /app/data/videos/quick-science_ep01/audio
+                  - paragraph [ref=e570]:
+                    - text: "(Alignment degraded — the renderer falls back to DSL default durations; rerun this stage to backfill.)Render complete:"
+                    - code [ref=e571]: /app/data/videos/quick-science_ep01/renders/quick-science_ep01.mp4
+                  - list [ref=e572]:
+                    - listitem [ref=e573]: "job_id: quick-science_ep01 · 630 frames @ 30fps video_pipeline stage summary:"
+                    - listitem [ref=e574]: "video_spec: done"
+                    - listitem [ref=e575]: "asset_gen: done"
+                    - listitem [ref=e576]: "narration_gen: done"
+                    - listitem [ref=e577]: "video_compose: done"
+              - generic [ref=e579]:
+                - generic [ref=e580]:
+                  - button "Copy" [ref=e581] [cursor=pointer]:
+                    - img [ref=e582]
+                  - tooltip: Copy
+                - generic [ref=e586]:
+                  - button "Play aloud" [ref=e587] [cursor=pointer]:
+                    - img [ref=e588]
+                  - tooltip: Play aloud
+                - generic [ref=e592]:
+                  - button "Delete" [ref=e593] [cursor=pointer]:
+                    - img [ref=e594]
+                  - tooltip: Delete
+            - generic [ref=e598]:
+              - generic [ref=e600]: video_pipeline
+              - generic [ref=e602]: 将这篇文章做成一个视频，https://finance.sina.com.cn/7x24/2026-08-03/doc-inikytnx6186916.shtml
+              - generic [ref=e603]:
+                - generic [ref=e604]:
+                  - button "Copy" [ref=e605] [cursor=pointer]:
+                    - img [ref=e606]
+                  - tooltip: Copy
+                - generic [ref=e609]:
+                  - button "Edit" [ref=e610] [cursor=pointer]:
+                    - img [ref=e611]
+                  - tooltip: Edit
+            - generic [ref=e614]:
+              - generic [ref=e615]:
+                - button "Done · 3m 16s" [ref=e616] [cursor=pointer]:
+                  - img [ref=e617]
+                  - generic [ref=e626]: Done
+                  - generic [ref=e627]: · 3m 16s
+                  - img [ref=e628]
+                - generic [ref=e631]:
+                  - button "Style design" [ref=e633] [cursor=pointer]:
+                    - img [ref=e635]
+                    - generic [ref=e650]: Style design
+                    - img [ref=e651]
+                  - button "Spec generation" [ref=e654] [cursor=pointer]:
+                    - img [ref=e656]
+                    - generic [ref=e671]: Spec generation
+                    - img [ref=e672]
+                  - button "Spec repair" [ref=e675] [cursor=pointer]:
+                    - img [ref=e677]
+                    - generic [ref=e692]: Spec repair
+                    - img [ref=e693]
+              - button "Your answers · 2/4 answered" [ref=e696] [cursor=pointer]:
+                - generic [ref=e697]:
+                  - img [ref=e698]
+                  - heading "Your answers" [level=3] [ref=e700]
+                  - generic [ref=e701]: · 2/4 answered
+              - article [ref=e702]:
+                - generic [ref=e703]:
+                  - paragraph [ref=e704]: "Video spec generated and passed both validation layers:"
+                  - list [ref=e705]:
+                    - listitem [ref=e706]:
+                      - text: "spec:"
+                      - code [ref=e707]: /app/data/videos/u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01.yaml
+                    - listitem [ref=e708]:
+                      - text: "artifact dir:"
+                      - code [ref=e709]: /app/data/videos/u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01
+                    - listitem [ref=e710]:
+                      - text: "series: 财经小课堂 ep.1 · short-7 · 7 scenes Assets done: 0 asset(s), manifest:"
+                      - code [ref=e711]: /app/data/videos/u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01/assets/manifest.json
+                      - text: "(8 degraded item(s) — see manifest.degraded.)Narration done: 0 audio file(s), 0 alignment file(s)"
+                    - listitem [ref=e712]:
+                      - text: "audio dir:"
+                      - code [ref=e713]: /app/data/videos/u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01/audio
+                  - paragraph [ref=e714]:
+                    - text: "(Alignment degraded — the renderer falls back to DSL default durations; rerun this stage to backfill.)Render complete:"
+                    - code [ref=e715]: /app/data/videos/u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01/renders/u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01.mp4
+                  - list [ref=e716]:
+                    - listitem [ref=e717]: "job_id: u8d22-u7ecf-u5c0f-u8bfe-u5802_ep01 · 630 frames @ 30fps video_pipeline stage summary:"
+                    - listitem [ref=e718]: "video_spec: done"
+                    - listitem [ref=e719]: "asset_gen: done"
+                    - listitem [ref=e720]: "narration_gen: done"
+                    - listitem [ref=e721]: "video_compose: done"
+              - generic [ref=e723]:
+                - generic [ref=e724]:
+                  - button "Copy" [ref=e725] [cursor=pointer]:
+                    - img [ref=e726]
+                  - tooltip: Copy
+                - generic [ref=e730]:
+                  - button "Play aloud" [ref=e731] [cursor=pointer]:
+                    - img [ref=e732]
+                  - tooltip: Play aloud
+                - generic [ref=e736]:
+                  - button "Delete" [ref=e737] [cursor=pointer]:
+                    - img [ref=e738]
+                  - tooltip: Delete
+          - generic [ref=e114]:
+            - textbox "How can I help you today?" [active] [ref=e116]
+            - generic [ref=e118]:
+              - button "Chat" [ref=e120] [cursor=pointer]:
+                - generic [ref=e121]:
+                  - img [ref=e122]
+                  - generic [ref=e124]: Chat
+                - img [ref=e125]
+              - button "Add files & context" [ref=e128] [cursor=pointer]:
+                - img [ref=e129]
+              - generic [ref=e130]:
+                - button "Select persona" [ref=e132] [cursor=pointer]:
+                  - img [ref=e133]
+                  - generic:
+                    - generic: Default
+                    - img [ref=e136]
+                - button "Select model" [ref=e139] [cursor=pointer]:
+                  - img [ref=e742]
+                  - generic:
+                    - generic: deepseek-v4-pro
+                    - img [ref=e143]
+                - button "Record voice" [ref=e145] [cursor=pointer]:
+                  - img [ref=e146]
+                - button "Send" [disabled] [ref=e149]:
+                  - img [ref=e150]
+        - dialog
+        - dialog:
+          - separator
+          - generic:
+            - generic:
+              - button:
+                - img
+                - generic: Activity
+            - button:
+              - img
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - img
+                  - generic: Session activity
+                - generic: As you chat, the tools and references you use — and the files the tutor generates — will appear here.
+              - generic:
+                - generic: Open
+                - generic:
+                  - img
+                  - textbox:
+                    - /placeholder: //example.com
+                  - button [disabled]:
+                    - img
+                - button:
+                  - img
+                  - text: Open a local file
+  - button "Open Next.js Dev Tools" [ref=e748] [cursor=pointer]:
+    - img [ref=e749]
+  - alert [ref=e752]

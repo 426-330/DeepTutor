@@ -62,9 +62,23 @@ export function buildVisiblePath(
   allMessages: MessageItem[],
   selectedBranches: Record<string, number> | undefined,
 ): VisiblePathResult {
+  // Re-root messages whose parent is missing from the list. Deleting a turn
+  // can leave the next turn's first message with a dangling
+  // ``parent_message_id``; without this the walk below starts at the null
+  // root, finds no children, and the entire transcript renders empty.
+  const knownIds = new Set<number>();
+  for (const msg of allMessages) {
+    if (msg.id !== undefined) knownIds.add(msg.id);
+  }
+  const messages = allMessages.map((msg) =>
+    msg.parentMessageId != null && !knownIds.has(msg.parentMessageId)
+      ? { ...msg, parentMessageId: null }
+      : msg,
+  );
+
   // Group by parent.
   const childrenByParent = new Map<string, MessageItem[]>();
-  for (const msg of allMessages) {
+  for (const msg of messages) {
     if (msg.id === undefined) continue;
     const key = parentKey(msg.parentMessageId);
     const arr = childrenByParent.get(key);
