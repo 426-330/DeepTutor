@@ -214,9 +214,12 @@ export default function VideoDetailPage({ name }: { name: string }) {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]">
+          <h1
+            className="flex items-center gap-2 text-lg font-semibold text-[var(--foreground)]"
+            title={artifacts.name}
+          >
             <Clapperboard size={18} />
-            {artifacts.name}
+            {artifacts.display_name || artifacts.name}
           </h1>
           <div className="ml-auto flex items-center gap-3">
             <StageLights stages={stages} showLabels />

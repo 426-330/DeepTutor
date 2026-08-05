@@ -10,13 +10,14 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clapperboard, Loader2, Plus } from "lucide-react";
+import { Clapperboard, Loader2, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Modal from "@/components/common/Modal";
 import StageLights from "@/components/videos/StageLights";
 import { useAppShell } from "@/context/AppShellContext";
 import { formatDate, formatTime } from "@/lib/datetime";
 import {
+  deleteVideo,
   getVideoArtifacts,
   listVideos,
   type VideoSummary,
@@ -68,6 +69,26 @@ export default function VideosHomePage() {
   }, [refresh]);
 
   const canCreate = series.trim() !== "" && topic.trim() !== "";
+
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const handleDelete = useCallback(
+    async (video: VideoSummary) => {
+      const label = video.display_name || video.name;
+      if (!window.confirm(t("Delete video project \"{{name}}\"? This cannot be undone.", { name: label }))) {
+        return;
+      }
+      setDeleting(video.name);
+      try {
+        await deleteVideo(video.name);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setDeleting(null);
+      }
+    },
+    [refresh, t],
+  );
 
   const handleCreate = useCallback(() => {
     if (!canCreate) return;
@@ -158,10 +179,33 @@ export default function VideosHomePage() {
                   className="group flex flex-col rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 transition-colors hover:border-[var(--primary)]/50"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="truncate text-[14px] font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">
-                      {video.name}
+                    <span
+                      className="truncate text-[14px] font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]"
+                      title={video.name}
+                    >
+                      {video.display_name || video.name}
                     </span>
-                    <StageLights stages={video.stages} />
+                    <span className="flex shrink-0 items-center gap-1">
+                      <StageLights stages={video.stages} />
+                      <button
+                        type="button"
+                        aria-label={t("Delete")}
+                        title={t("Delete")}
+                        disabled={deleting === video.name}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          void handleDelete(video);
+                        }}
+                        className="rounded p-1 text-[var(--muted-foreground)] opacity-0 transition-opacity hover:text-[var(--danger,#dc2626)] group-hover:opacity-100 disabled:opacity-40"
+                      >
+                        {deleting === video.name ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                      </button>
+                    </span>
                   </div>
                   <div className="mt-2 text-[12px] text-[var(--muted-foreground)]">
                     {video.has_spec

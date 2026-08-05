@@ -119,15 +119,47 @@ def _scene_count(spec_path: Path) -> int | None:
     return None
 
 
+def _spec_series_title(spec_path: Path) -> str | None:
+    """读 spec 的 series 字段作为人类可读名称（slug 是 unicode 转义，不可读）。"""
+    try:
+        data = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if isinstance(data, dict):
+        title = str(data.get("series") or "").strip()
+        return title or None
+    return None
+
+
+def _project_mtime(spec_path: Path, video_dir: Path) -> float:
+    """项目最近活动时间：spec 与产物目录内最新文件的 mtime 最大值。"""
+    latest = 0.0
+    for candidate in (spec_path, video_dir):
+        try:
+            if candidate.is_file():
+                latest = max(latest, candidate.stat().st_mtime)
+            elif candidate.is_dir():
+                for child in candidate.rglob("*"):
+                    if child.is_file():
+                        latest = max(latest, child.stat().st_mtime)
+        except OSError:
+            continue
+    return latest
+
+
 def _video_summary(name: str, spec_path: Path, video_dir: Path) -> dict[str, Any]:
     slug, episode = _parse_video_name(name)
     has_spec = spec_path.is_file()
+    series_title = _spec_series_title(spec_path) if has_spec else None
     item: dict[str, Any] = {
         "series_slug": slug,
         "episode": episode,
         "name": name,
+        # 内容生成的人类可读名称（如 "理财小课堂 第1集"）；无 spec 时回落 slug。
+        "display_name": f"{series_title} 第{episode}集" if series_title else slug,
         "spec_path": str(spec_path),
         "has_spec": has_spec,
+        "mtime": _project_mtime(spec_path, video_dir),
         "renders": [entry["job_id"] for entry in _list_renders(video_dir)],
     }
     if has_spec:
@@ -216,10 +248,29 @@ async def list_videos() -> list[dict[str, Any]]:
     for child in root.iterdir():
         if child.is_dir() and _VIDEO_NAME_RE.fullmatch(child.name):
             names.setdefault(child.name, (root / f"{child.name}.yaml", child))
-    return [
+    items = [
         _video_summary(name, spec_path, video_dir)
         for name, (spec_path, video_dir) in sorted(names.items())
     ]
+    # 按最近活动时间倒序（最新项目在前）。
+    items.sort(key=lambda entry: entry.get("mtime") or 0.0, reverse=True)
+    return items
+
+
+@router.delete("/{name}")
+async def delete_video(name: str) -> dict[str, Any]:
+    """删除视频项目：spec 文件 + 同名产物目录（含渲染产物），不可恢复。"""
+    _parse_video_name(name)  # 非法名 404（不暴露路径细节）
+    root = videos_root()
+    spec_path = root / f"{name}.yaml"
+    video_dir = root / name
+    if not spec_path.is_file() and not video_dir.is_dir():
+        raise HTTPException(status_code=404, detail="video project not found")
+    if spec_path.is_file():
+        spec_path.unlink()
+    if video_dir.is_dir():
+        shutil.rmtree(video_dir)
+    return {"ok": True, "name": name}
 
 
 @router.get("/{name}/spec")
@@ -433,8 +484,12 @@ async def get_artifacts(name: str) -> dict[str, Any]:
             audio.append(entry)
 
     state = PipelineState.load(video_dir)
+    slug, episode = _parse_video_name(name)
+    series_title = _spec_series_title(videos_root() / f"{name}.yaml")
     return {
         "name": name,
+        # 人类可读标题（spec.series + 集数），无 spec 时回落 slug。
+        "display_name": f"{series_title} 第{episode}集" if series_title else slug,
         "assets": assets,
         "audio": audio,
         "renders": _list_renders(video_dir),

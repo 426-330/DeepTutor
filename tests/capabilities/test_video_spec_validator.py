@@ -305,3 +305,39 @@ class TestHelpers:
             {"start": 0.0, "end": 0.3, "text": "你"},
             {"start": 0.3, "end": 0.6, "text": "好"},
         ]
+
+
+class TestFlattenContentSlots:
+    """LLM 误用 content_slots 包装键时自动展开（实测 DeepSeek V4 Pro 高频错误）。"""
+
+    def test_wrapper_flattened(self):
+        from deeptutor.capabilities.video.validator import _flatten_content_slots
+
+        doc = {
+            "scenes": [
+                {
+                    "type": "problem_hook",
+                    "content_slots": {"phenomenon": "现象", "promise": "承诺"},
+                }
+            ]
+        }
+        _flatten_content_slots(doc)
+        scene = doc["scenes"][0]
+        assert "content_slots" not in scene
+        assert scene["phenomenon"] == "现象"
+        assert scene["promise"] == "承诺"
+
+    def test_flat_keys_win(self):
+        from deeptutor.capabilities.video.validator import _flatten_content_slots
+
+        doc = {
+            "scenes": [
+                {
+                    "type": "problem_hook",
+                    "phenomenon": "平铺版",
+                    "content_slots": {"phenomenon": "包装版"},
+                }
+            ]
+        }
+        _flatten_content_slots(doc)
+        assert doc["scenes"][0]["phenomenon"] == "平铺版"

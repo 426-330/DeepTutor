@@ -62,7 +62,9 @@ spec_system: |
      - visual: primary required (main visual description),
        secondary / emphasis optional
      - transition: next_question (leads into the next scene)
-  4. Fill the content_slots matching each scene type:
+  4. Fill the content_slots matching each scene type (**write them flat at the
+     scene level — NEVER wrap them in a `content_slots:` key; the schema has
+     no such wrapper and it will be rejected**):
      - opening: hook_line, key_visual, agenda (<= 4 items)
      - problem_hook: phenomenon, counter_question, promise
      - concept: definition, analogy, key_points (<= 4 items), misconception
@@ -82,6 +84,13 @@ spec_system: |
   Content quality: one core message per scene; narration matches the visuals;
   every formula must land on a real-number example; the closing key_cards
   condense the whole video into exactly 3 take-away cards.
+
+  Content grounding (hard rule): every scene's core_message, narration and
+  content_slots MUST be grounded in the provided material and the user's
+  topic. When the material cannot support the preset scene count, reduce
+  depth rather than fabricate facts, numbers, quotes or cases. With no
+  material (pure-topic generation), stay on the user's topic and never
+  invent specific facts.
 
 spec_user_template: |
   Video topic: {topic}
@@ -104,6 +113,10 @@ spec_user_template: |
 
   Reference material (from URLs/attachments, may be empty):
   {materials}
+
+  Material summary (content MUST be grounded in this — never fabricate
+  beyond it):
+  {materials_summary}
 
   Conversation context:
   {history_context}
@@ -136,6 +149,10 @@ retry_user_template: |
   Reference material:
   {materials}
 
+  Material summary (content MUST be grounded in this — never fabricate
+  beyond it):
+  {materials_summary}
+
   Previous YAML:
   {previous_yaml}
 
@@ -160,6 +177,9 @@ status:
   clarifying: Clarifying audience, length and style preferences...
   clarified: "Preset: {preset}; theme: {theme}."
   fetch_failed: "Failed to fetch {url}: {error}"
+  fetch_all_failed: |
+    All URL fetches failed: {urls}
+    Options: 1) paste the article text and resend; 2) upload the document as an attachment; 3) force-continue with allow_fetch_failure: true (content will be generated from the topic alone).
   designing: Designing the style block...
   skills_mounted: "Effect skills mounted: {names}"
   generating: Filling the blueprint skeleton scene by scene...

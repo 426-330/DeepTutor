@@ -77,11 +77,14 @@ class VideoSpecAgent(BaseAgent):
         font_hint: str,
         effects_hint: str,
         skills_text: str = "",
+        materials_summary: str = "",
     ) -> dict[str, Any]:
         """生成顶层 style 设计块（JSON）。失败/非法返回空 dict（用默认主题）。
 
         ``skills_text`` 为已安装特效技能约束：全局 background 特效在此阶段
         决策，技能绑定（skill + params）必须在此写入，否则渲染层无组件可用。
+        ``materials_summary`` 为素材摘要（D2，标题+前 N 字符截取）：风格
+        设计贴合素材领域。
         """
         system_prompt = self.get_prompt("style_system")
         user_template = self.get_prompt("style_user_template")
@@ -95,6 +98,8 @@ class VideoSpecAgent(BaseAgent):
             font_hint=font_hint.strip() or "(default)",
             effects_hint=effects_hint.strip() or "(default)",
         )
+        if materials_summary.strip():
+            user_prompt += "\n\n素材摘要（风格设计需贴合素材领域）：\n" + materials_summary.strip()
         if skills_text.strip():
             user_prompt += (
                 "\n\n已安装特效技能（若使用 background.type=particles 等特效，"
@@ -132,6 +137,7 @@ class VideoSpecAgent(BaseAgent):
         materials: str,
         history_context: str,
         skills_text: str = "",
+        materials_summary: str = "",
         previous_yaml: str = "",
         validation_errors: str = "",
     ) -> str:
@@ -139,6 +145,8 @@ class VideoSpecAgent(BaseAgent):
 
         ``skills_text`` 为已安装特效技能的约束文本（skills.py
         ``render_skill_constraints``）；为空表示无特效技能注入。
+        ``materials`` 为全文截断版素材，``materials_summary`` 为摘要版
+        （D2，进约束段）；两者皆空 = 纯主题生成（合法路径）。
         """
         system_prompt = self.get_prompt("spec_system")
         if not system_prompt:
@@ -154,6 +162,7 @@ class VideoSpecAgent(BaseAgent):
             yaml.safe_dump(style, allow_unicode=True, sort_keys=False) if style else "(none)"
         )
         skills_block = skills_text.strip() or "(none)"
+        summary_block = materials_summary.strip() or "(none)"
 
         if validation_errors:
             user_template = self.get_prompt("retry_user_template")
@@ -164,6 +173,7 @@ class VideoSpecAgent(BaseAgent):
                 layouts=layouts_yaml.strip(),
                 style=style_yaml.strip(),
                 materials=materials.strip() or "(none)",
+                materials_summary=summary_block,
                 skills=skills_block,
                 previous_yaml=previous_yaml.strip(),
                 validation_errors=validation_errors.strip(),
@@ -180,6 +190,7 @@ class VideoSpecAgent(BaseAgent):
                 layouts=layouts_yaml.strip(),
                 style=style_yaml.strip(),
                 materials=materials.strip() or "(none)",
+                materials_summary=summary_block,
                 skills=skills_block,
                 history_context=history_context.strip() or "(none)",
             )

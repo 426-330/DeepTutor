@@ -54,7 +54,8 @@ spec_system: |
        字符串，口语化、可直接 TTS 朗读，三段合计约 40–90 字/屏
      - visual：primary 必填（主视觉描述），secondary / emphasis 可选
      - transition：next_question（引向下一屏的问题）
-  4. 按屏 type 填对应的 content_slots：
+  4. 按屏 type 填对应的 content_slots（**直接平铺在场景上，禁止包一层
+     `content_slots:` 键**——schema 没有这层包装，包了必被打回）：
      - opening: hook_line, key_visual, agenda（≤4 条）
      - problem_hook: phenomenon, counter_question, promise
      - concept: definition, analogy, key_points（≤4 条）, misconception
@@ -72,6 +73,11 @@ spec_system: |
 
   内容质量：一屏一个核心结论；口播稿与画面内容对应；公式必须配真实数字
   算例；结尾 key_cards 收束为恰好 3 张可带走的要点卡。
+
+  内容接地（硬约束）：所有屏的 core_message、narration 与 content_slots
+  必须基于所给素材与用户主题展开；素材不足以支撑预设屏数时，宁可减少
+  内容深度也不得编造事实、数字、引文或案例。没有素材时（纯主题生成）
+  围绕用户主题展开，同样不得虚构具体事实。
 
 spec_user_template: |
   视频主题：{topic}
@@ -93,6 +99,9 @@ spec_user_template: |
 
   参考素材（来自 URL/附件，可能为空）：
   {materials}
+
+  素材摘要（内容必须以此为准，不得超出素材编造事实）：
+  {materials_summary}
 
   对话上下文：
   {history_context}
@@ -124,6 +133,9 @@ retry_user_template: |
   参考素材：
   {materials}
 
+  素材摘要（内容必须以此为准，不得超出素材编造事实）：
+  {materials_summary}
+
   上一版 YAML：
   {previous_yaml}
 
@@ -148,6 +160,9 @@ status:
   clarifying: 正在澄清受众、长度与风格偏好…
   clarified: 长度预设 {preset}，主题 {theme}。
   fetch_failed: 网页抓取失败 {url}：{error}
+  fetch_all_failed: |
+    网页抓取全部失败：{urls}
+    可以选择：① 把文章正文粘贴后重发；② 上传文档附件；③ 加 allow_fetch_failure: true 强制继续（内容将仅凭主题生成）。
   designing: 正在设计 style 视觉块…
   skills_mounted: 已挂载特效技能：{names}
   generating: 正在按蓝图骨架逐屏填充…

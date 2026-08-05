@@ -91,16 +91,40 @@ def _bigrams(text: str) -> set[str]:
     return {clean[i : i + 2] for i in range(len(clean) - 1)}
 
 
+def _flatten_content_slots(data: dict[str, Any]) -> None:
+    """把场景内误用的 ``content_slots`` 包装键展开到场景顶层（原地修改）。
+
+    DSL 的 content_slots 是场景类型专有字段、直接平铺在场景上；LLM（实测
+    DeepSeek V4 Pro）经常错误地包一层 ``content_slots: {...}``，导致
+    additionalProperties 校验反复失败、三次回炉都修不回来。直接键优先
+    （平铺字段已存在时不覆盖），包装键随后删除。
+    """
+    scenes = data.get("scenes")
+    if not isinstance(scenes, list):
+        return
+    for scene in scenes:
+        if not isinstance(scene, dict):
+            continue
+        slots = scene.pop("content_slots", None)
+        if isinstance(slots, dict):
+            for key, value in slots.items():
+                scene.setdefault(key, value)
+
+
 def semantic_review(
     data: dict[str, Any],
     *,
     known_skills: set[str] | None = None,
+    reference_text: str = "",
 ) -> list[SpecError]:
     """§13 语义复查最小集（schema 通过后再跑；跨字段规则不进 schema）。
 
     ``known_skills`` 给出已安装特效技能标识集合时，额外做 warning 级复查：
     ``style.effects.background.skill``（顶层与分镜级）引用未安装技能 →
     warning（不阻断；渲染层按白名单降级占位帧，D8/§12）。
+    ``reference_text``（用户消息 + 素材标题）非空时做 W11 相关性复查：
+    spec 标题集与参考文本字符级 bigram 零重合 → warning（启发式，不阻断、
+    不回炉，improve-video-gen-flow D3）。
     """
     errors: list[SpecError] = []
 
@@ -290,6 +314,33 @@ def semantic_review(
                     )
                 )
 
+    # W11: 相关性复查（warning 级）——spec 标题集（series + opening.title +
+    # 各屏 title）与参考文本（用户消息 + 素材标题）字符级 bigram 零重合 →
+    # 可能跑题。纯启发式，宁可误报不错报（improve-video-gen-flow D3）。
+    if reference_text.strip():
+        spec_titles = [str(data.get("series") or "")]
+        if isinstance(title, str):
+            spec_titles.append(title)
+        for scene in scenes:
+            if isinstance(scene, dict) and isinstance(scene.get("title"), str):
+                spec_titles.append(scene["title"])
+        spec_bigrams: set[str] = set()
+        for text in spec_titles:
+            spec_bigrams |= _bigrams(text)
+        ref_bigrams = _bigrams(reference_text)
+        if spec_bigrams and ref_bigrams and not (spec_bigrams & ref_bigrams):
+            errors.append(
+                SpecError(
+                    rule="semantic",
+                    field="series",
+                    message=(
+                        "spec 标题与输入主题/素材标题无任何重合，内容可能跑题"
+                        "（§13.11，启发式 warning）"
+                    ),
+                    severity="warning",
+                )
+            )
+
     return errors
 
 
@@ -297,12 +348,13 @@ def validate_spec(
     data: dict[str, Any],
     *,
     known_skills: set[str] | None = None,
+    reference_text: str = "",
 ) -> list[SpecError]:
     """完整两层校验：schema 不通过时短路（结构坏了语义复查无意义）。"""
     schema_errors = validate_schema(data)
     if schema_errors:
         return schema_errors
-    return semantic_review(data, known_skills=known_skills)
+    return semantic_review(data, known_skills=known_skills, reference_text=reference_text)
 
 
 def has_blocking_errors(errors: list[SpecError]) -> bool:

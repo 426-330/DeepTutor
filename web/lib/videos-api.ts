@@ -29,8 +29,14 @@ export interface VideoSummary {
   series_slug: string;
   episode: number;
   name: string;
+  /** Human-readable title derived from the spec's series field (e.g.
+   *  "理财小课堂 第1集"); falls back to the slug when the spec is absent. */
+  display_name?: string;
   spec_path: string;
   has_spec: boolean;
+  /** Latest activity across spec + artifact dir (epoch seconds). List is
+   *  already sorted by this desc. */
+  mtime?: number;
   /** Optional — absent when the spec is missing or unparsable. */
   scene_count?: number | null;
   /** Optional — absent when no pipeline_state.json exists yet. */
@@ -65,6 +71,8 @@ export interface VideoAudioEntry {
 
 export interface VideoArtifacts {
   name: string;
+  /** Human-readable title from the spec's series field; slug when absent. */
+  display_name?: string;
   assets: VideoAssetEntry[];
   audio: VideoAudioEntry[];
   renders: VideoRenderEntry[];
@@ -144,6 +152,17 @@ export async function triggerVideoRender(
     throw new Error(await readErrorDetail(res, "Failed to trigger render"));
   }
   return (await res.json()) as RenderTriggerResponse;
+}
+
+/** Delete a video project (spec + artifact dir). Irreversible. */
+export async function deleteVideo(name: string): Promise<void> {
+  const res = await apiFetch(
+    apiUrl(`/api/v1/videos/${encodeURIComponent(name)}`),
+    { method: "DELETE" },
+  );
+  if (!res.ok) {
+    throw new Error(await readErrorDetail(res, "Failed to delete video"));
+  }
 }
 
 /** URL for a static artifact file (`<video>/<img>/<audio>` src or download). */

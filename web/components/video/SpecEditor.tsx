@@ -67,6 +67,14 @@ export default function SpecEditor({ name }: { name: string }) {
     [yamlText],
   );
 
+  /** 人类可读标题（spec.series + 集数），解析失败/无 series 时回落 slug。 */
+  const displayName = useMemo(() => {
+    if (parsed?.ok && parsed.doc.series) {
+      return `${parsed.doc.series} 第${parsed.doc.episode}集`;
+    }
+    return name;
+  }, [parsed, name]);
+
   const dirty = yamlText != null && yamlText !== savedText;
 
   /** 表单编辑入口：在解析后的 doc 副本上执行变更，再 dump 回 YAML 文本。 */
@@ -160,7 +168,9 @@ export default function SpecEditor({ name }: { name: string }) {
         >
           ← {t("Videos")}
         </Link>
-        <h1 className="truncate text-sm font-semibold">{name}</h1>
+        <h1 className="truncate text-sm font-semibold" title={name}>
+          {displayName}
+        </h1>
         <div className="ml-auto flex items-center gap-2">
           <div className="flex overflow-hidden rounded-lg border border-[var(--border)] text-xs">
             {(["form", "yaml"] as const).map((m) => (

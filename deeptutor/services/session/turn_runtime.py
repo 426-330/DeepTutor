@@ -1154,6 +1154,7 @@ class TurnRuntimeManager:
         # Cleaned up unconditionally in the outer ``finally``.
         reply_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
         self._reply_queues[turn_id] = reply_queue
+        keepalive_task: asyncio.Task[None] | None = None
 
         async def _wait_for_user_reply() -> dict[str, Any] | None:
             return await reply_queue.get()
@@ -1623,12 +1624,45 @@ class TurnRuntimeManager:
 
             orch = ChatOrchestrator()
             pending_done_event: StreamEvent | None = None
+            # video-generation-system: capability 失败路径的用户可见文本兜底。
+            # assistant 消息只持久化 CONTENT 事件；video 系等 capability 的
+            # 失败路径只发 error/result 信封时气泡会空白，这里记下候选文本，
+            # 持久化时若正文为空则回退到 result.response → error 消息。
+            result_response_fallback = ""
+            last_error_fallback = ""
+            # video-generation-system: turn 级心跳。长阻塞调用（如推理模型
+            # 的 spec 生成）可能数分钟无事件，前端 180s 空闲计时会把健康的
+            # turn 误判为超时（"Connection timed out — no response received
+            # for 180 seconds"）。每 30s 发一条 keepalive 进度事件，仅用于
+            # 刷新前端空闲计时（前端 trace 对 metadata.keepalive 静默处理）。
+            async def _keepalive() -> None:
+                while True:
+                    await asyncio.sleep(30)
+                    try:
+                        await self._publish_live_event(
+                            execution,
+                            StreamEvent(
+                                type=StreamEventType.PROGRESS,
+                                source=capability_name,
+                                metadata={"keepalive": True},
+                            ),
+                        )
+                    except Exception:  # turn 收尾阶段发布失败即退出
+                        return
+
+            keepalive_task = asyncio.create_task(_keepalive())
             async for event in orch.handle(context):
                 if event.type == StreamEventType.SESSION:
                     continue
                 if event.type == StreamEventType.DONE:
                     pending_done_event = event
                     continue
+                if event.type == StreamEventType.RESULT:
+                    candidate = str((event.metadata or {}).get("response") or "").strip()
+                    if candidate:
+                        result_response_fallback = candidate
+                elif event.type == StreamEventType.ERROR and str(event.content or "").strip():
+                    last_error_fallback = str(event.content).strip()
                 payload_event = await self._publish_live_event(execution, event)
                 if payload_event.get("type") not in {"done", "session"}:
                     assistant_events.append(payload_event)
@@ -1651,7 +1685,10 @@ class TurnRuntimeManager:
 
             # The persisted answer is the captured content minus any narration
             # rounds (their text stayed in the trace, never the answer).
-            assistant_content = _persisted_answer()
+            # 无 CONTENT 时回退到 result.response / error 文本（见上方注释）。
+            assistant_content = (
+                _persisted_answer() or result_response_fallback or last_error_fallback
+            )
 
             # Assistant continues the same branch as the user message it
             # answers. If we just persisted a new user row we chain off
@@ -1808,6 +1845,11 @@ class TurnRuntimeManager:
         finally:
             if llm_scope_token is not None and reset_active_llm_selection is not None:
                 reset_active_llm_selection(llm_scope_token)
+            # 停掉 turn 级心跳（见 orch 循环前注释）。
+            if keepalive_task is not None:
+                keepalive_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await keepalive_task
             # Drop the reply queue first — any in-flight ``submit_user_reply``
             # that finds the queue gone will return ``False`` rather than
             # accumulating on a dead turn.

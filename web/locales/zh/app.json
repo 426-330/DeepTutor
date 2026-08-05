@@ -2858,5 +2858,6 @@
   "Meta summary": "Meta 摘要",
   "Aligned": "已对齐",
   "No alignment": "未对齐",
-  "Loading player…": "正在加载播放器…"
+  "Loading player…": "正在加载播放器…",
+  "Delete video project \"{{name}}\"? This cannot be undone.": "删除视频项目“{{name}}”？此操作不可撤销。"
 }

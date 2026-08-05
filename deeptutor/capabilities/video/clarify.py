@@ -9,11 +9,28 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
+import re
 from typing import Any
 
 from deeptutor.core.context import UnifiedContext
 from deeptutor.core.stream_bus import StreamBus
 from deeptutor.tools.ask_user import build_ask_user_payload
+
+_CJK_RE = re.compile(r"[一-鿿㐀-䶿豈-﫿]")
+
+
+def resolve_prompt_language(message: str, context_language: str | None) -> str:
+    """澄清/prompts 语言解析（D4）：显式 zh/en > 用户消息 CJK 检测 > en。
+
+    ``context_language`` 为空/未识别视为未设置；显式设置时优先，不受
+    启发式影响（中英混输含 CJK 即判 zh）。
+    """
+    lang = str(context_language or "").strip().lower()
+    if lang.startswith("zh"):
+        return "zh"
+    if lang.startswith("en"):
+        return "en"
+    return "zh" if _CJK_RE.search(message or "") else "en"
 
 
 @dataclass(frozen=True)
@@ -200,4 +217,4 @@ async def clarify_prefs(
     )
 
 
-__all__ = ["ClarifyPrefs", "clarify_prefs", "normalize_preset"]
+__all__ = ["ClarifyPrefs", "clarify_prefs", "normalize_preset", "resolve_prompt_language"]

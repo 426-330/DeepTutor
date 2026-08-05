@@ -22,7 +22,17 @@ from typing import Any
 import yaml
 
 from deeptutor.agents._shared.capability_result import emit_capability_result
-from deeptutor.capabilities.video.clarify import ClarifyPrefs, clarify_prefs
+from deeptutor.capabilities.video.clarify import (
+    ClarifyPrefs,
+    clarify_prefs,
+    resolve_prompt_language,
+)
+from deeptutor.capabilities.video.materials import (
+    GatheredMaterials,
+    MaterialSource,
+    should_abort_on_fetch_failure,
+    summarize_materials,
+)
 from deeptutor.capabilities.video.migrations import migrate_spec
 from deeptutor.capabilities.video.paths import (
     slugify_series,
@@ -36,6 +46,7 @@ from deeptutor.capabilities.video.skills import (
 from deeptutor.capabilities.video.spec_agent import VideoSpecAgent
 from deeptutor.capabilities.video.validator import (
     SpecError,
+    _flatten_content_slots,
     format_errors_for_llm,
     has_blocking_errors,
     validate_spec,
@@ -74,17 +85,20 @@ class VideoSpecCapability(BaseCapability):
 
         llm_config = get_llm_config()
         usage = UsageTracker(model=getattr(llm_config, "model", None))
-        i18n = StatusI18n(self.name, context.language, module="capabilities")
         overrides = context.config_overrides or {}
         max_attempts = int(overrides.get("max_attempts", _DEFAULT_MAX_ATTEMPTS) or 0)
         max_attempts = max(1, max_attempts)
+
+        # D4：prompts 语言 = 显式 context.language > 用户消息 CJK 检测 > en。
+        prompt_language = resolve_prompt_language(context.user_message, context.language)
+        i18n = StatusI18n(self.name, prompt_language, module="capabilities")
 
         from deeptutor.services.prompt import get_prompt_manager
 
         prompts = get_prompt_manager().load_prompts(
             module_name="capabilities",
             agent_name="video_spec",
-            language=context.language,
+            language=prompt_language,
         )
         clarify_copy = prompts.get("clarify") if isinstance(prompts, dict) else None
 
@@ -92,7 +106,7 @@ class VideoSpecCapability(BaseCapability):
             api_key=llm_config.api_key,
             base_url=llm_config.base_url,
             api_version=llm_config.api_version,
-            language=context.language,
+            language=prompt_language,
         )
         agent.set_trace_callback(self._build_trace_bridge(stream, i18n=i18n))
 
@@ -107,6 +121,41 @@ class VideoSpecCapability(BaseCapability):
                 context, stream, copy=clarify_copy or {}, source=self.name
             )
             materials = await self._gather_materials(context, stream, i18n)
+
+            # D1：消息含 URL ∧ 全部抓取失败 ∧ 无附件 ∧ 未显式放行 → 中止。
+            urls_in_message = _URL_RE.findall(context.user_message or "")[:_MAX_URLS]
+            if should_abort_on_fetch_failure(
+                urls_in_message=urls_in_message,
+                gathered=materials,
+                allow_fetch_failure=bool(overrides.get("allow_fetch_failure", False)),
+            ):
+                detail = i18n.t(
+                    "fetch_all_failed",
+                    (
+                        "网页抓取全部失败：{urls}\n"
+                        "可以选择：① 把文章正文粘贴后重发；② 上传文档附件；"
+                        "③ 加 allow_fetch_failure: true 强制继续（内容将仅凭主题生成）。"
+                    ),
+                    urls=", ".join(materials.failed_urls),
+                )
+                await stream.error(detail, source=self.name, stage="clarifying")
+                # 同步发 content：assistant 消息只持久化 CONTENT 事件，
+                # 仅发 error/result 会导致前端聊天气泡空白（实测：用户
+                # 答完澄清卡片后"没有反应"）。
+                await stream.content(detail, source=self.name, stage="clarifying")
+                await emit_capability_result(
+                    stream,
+                    {
+                        "response": detail,
+                        "ok": False,
+                        "error": "fetch_all_failed",
+                        "failed_urls": materials.failed_urls,
+                    },
+                    source=self.name,
+                    usage=usage,
+                )
+                return
+
             await stream.progress(
                 message=i18n.t(
                     "clarified",
@@ -158,6 +207,7 @@ class VideoSpecCapability(BaseCapability):
                 font_hint=prefs.font_hint,
                 effects_hint=prefs.effects_hint,
                 skills_text=skills_text,
+                materials_summary=materials.summary,
             )
             style = self._apply_pref_overrides(style, prefs)
 
@@ -195,7 +245,8 @@ class VideoSpecCapability(BaseCapability):
                     audience=prefs.audience,
                     preset=prefs.preset,
                     style=style,
-                    materials=materials,
+                    materials=materials.text,
+                    materials_summary=materials.summary,
                     history_context=history_context,
                     skills_text=skills_text,
                     previous_yaml=yaml_text,
@@ -206,7 +257,9 @@ class VideoSpecCapability(BaseCapability):
                     else "",
                 )
                 data, errors = self._parse_migrate_validate(
-                    yaml_text, known_skills=known_skills
+                    yaml_text,
+                    known_skills=known_skills,
+                    reference_text=self._reference_text(context, materials),
                 )
                 if not has_blocking_errors(errors):
                     break
@@ -304,6 +357,10 @@ class VideoSpecCapability(BaseCapability):
                 "attempts": attempts,
                 "clarify": prefs.answers,
                 "skills": [s.name for s in selected_skills],
+                # D1：部分抓取失败不阻断，失败 URL 进 warnings
+                "warnings": [
+                    f"fetch_failed: {url}" for url in materials.failed_urls
+                ],
                 "validation_warnings": warnings + skill_warnings,
             },
             source=self.name,
@@ -363,9 +420,13 @@ class VideoSpecCapability(BaseCapability):
         context: UnifiedContext,
         stream: StreamBus,
         i18n: StatusI18n,
-    ) -> str:
-        """多源输入：URL 经 web_fetch 解析；附件用既有解析层的 extracted_text。"""
-        parts: list[str] = []
+    ) -> GatheredMaterials:
+        """多源输入（D1/D2）：URL 经 web_fetch 解析；附件用既有解析层的
+        extracted_text。返回结构化结果（全文 + 摘要 + 成功/失败 URL +
+        附件数），抓取失败语义由调用方按 D1 判定。"""
+        sources: list[MaterialSource] = []
+        fetched_urls: list[str] = []
+        failed_urls: list[str] = []
 
         urls = _URL_RE.findall(context.user_message or "")[:_MAX_URLS]
         if urls:
@@ -374,8 +435,16 @@ class VideoSpecCapability(BaseCapability):
             for url in urls:
                 outcome = await fetch_url_as_markdown(url, max_chars=_URL_MATERIAL_CHARS)
                 if outcome.ok:
-                    parts.append(f"[Fetched: {outcome.url}]\n{outcome.markdown}")
+                    fetched_urls.append(url)
+                    sources.append(
+                        MaterialSource(
+                            label=outcome.url,
+                            title=outcome.title or outcome.url,
+                            text=outcome.markdown,
+                        )
+                    )
                 else:
+                    failed_urls.append(url)
                     await stream.progress(
                         message=i18n.t(
                             "fetch_failed",
@@ -387,15 +456,28 @@ class VideoSpecCapability(BaseCapability):
                         stage="clarifying",
                     )
 
+        attachment_count = 0
         for attachment in context.attachments or []:
             text = (attachment.extracted_text or "").strip()
             if text:
-                parts.append(
-                    f"[Attachment: {attachment.filename or attachment.id}]\n"
-                    f"{text[:_ATTACHMENT_MATERIAL_CHARS]}"
+                attachment_count += 1
+                sources.append(
+                    MaterialSource(
+                        label=attachment.filename or attachment.id or "attachment",
+                        title=attachment.filename or "attachment",
+                        text=text[:_ATTACHMENT_MATERIAL_CHARS],
+                    )
                 )
 
-        return "\n\n".join(parts)
+        full_text = "\n\n".join(f"[{s.label}]\n{s.text}" for s in sources)
+        return GatheredMaterials(
+            text=full_text,
+            summary=summarize_materials(sources),
+            sources=sources,
+            fetched_urls=fetched_urls,
+            failed_urls=failed_urls,
+            attachment_count=attachment_count,
+        )
 
     @staticmethod
     def _apply_pref_overrides(style: dict[str, Any], prefs: ClarifyPrefs) -> dict[str, Any]:
@@ -410,12 +492,20 @@ class VideoSpecCapability(BaseCapability):
         return out
 
     @staticmethod
+    def _reference_text(context: UnifiedContext, materials: GatheredMaterials) -> str:
+        """W11 相关性复查的参考文本：用户消息 + 素材标题（D3）。"""
+        parts = [context.user_message or ""]
+        parts.extend(source.title for source in materials.sources if source.title)
+        return "\n".join(part for part in parts if part.strip())
+
+    @staticmethod
     def _parse_migrate_validate(
         yaml_text: str,
         *,
         known_skills: set[str] | None = None,
+        reference_text: str = "",
     ) -> tuple[dict[str, Any] | None, list[SpecError]]:
-        """YAML 解析 → 版本迁移 → §10 + §13 两层校验（含技能 warning）。"""
+        """YAML 解析 → 版本迁移 → §10 + §13 两层校验（含技能/相关性 warning）。"""
         if not yaml_text.strip():
             return None, [
                 SpecError(rule="schema", field="(root)", message="LLM 未产出 YAML 内容")
@@ -430,11 +520,14 @@ class VideoSpecCapability(BaseCapability):
             return None, [
                 SpecError(rule="schema", field="(root)", message="spec 顶层必须是 mapping")
             ]
+        _flatten_content_slots(data)
         try:
             data = migrate_spec(data).data
         except ValueError as exc:
             return None, [SpecError(rule="schema", field="version", message=str(exc))]
-        return data, validate_spec(data, known_skills=known_skills)
+        return data, validate_spec(
+            data, known_skills=known_skills, reference_text=reference_text
+        )
 
     def _build_trace_bridge(self, stream: StreamBus, i18n: StatusI18n | None = None):
         async def _trace_bridge(update: dict[str, Any]) -> None:

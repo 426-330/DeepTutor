@@ -58,6 +58,8 @@ docker exec deeptutor python -m deeptutor_cli run video_pipeline \
 | `skills` | 特效技能：`["three/particle-wave"]`、`three/floating-shapes`、`three/grid-terrain` |
 | `skip_clarify` | 跳过 ask_user 交互澄清（无人值守必加） |
 | `start_from` | 断点续跑起始阶段（如 `video_compose`） |
+| `allow_fetch_failure` | URL 抓取全部失败时仍继续生成（默认中止报错；仅 video_spec） |
+| `clarify_timeout_s` | 澄清卡片等待秒数（默认 120；0/负数 = 不限时） |
 
 ### CLI
 
@@ -66,6 +68,8 @@ deeptutor video preview <spec.yaml>        # spec 摘要（屏数/时长/主题/
 deeptutor video spec validate <spec.yaml>  # 两层校验，error 级 exit 1
 deeptutor video render <spec.yaml>         # 触发渲染（--frames 90:180 局部重渲染）
 ```
+
+Provider 认证沿用上游 CLI：Provider auth (`openai-codex` OAuth login; `github-copilot` validates an existing Copilot auth session)（`deeptutor provider login <provider>`，详见 README.upstream.md）。
 
 ## 部署
 

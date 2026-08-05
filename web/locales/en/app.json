@@ -2858,5 +2858,6 @@
   "Meta summary": "Meta summary",
   "Aligned": "Aligned",
   "No alignment": "No alignment",
-  "Loading player…": "Loading player…"
+  "Loading player…": "Loading player…",
+  "Delete video project \"{{name}}\"? This cannot be undone.": "Delete video project \"{{name}}\"? This cannot be undone."
 }

@@ -191,3 +191,43 @@ def test_put_spec_warning_only_passes(client: TestClient) -> None:
     # warning 随响应返回（severity=warning），不阻断保存
     assert any(w["severity"] == "warning" for w in payload.get("warnings", []))
     assert client.get("/api/v1/videos/demo_ep01/spec").status_code == 200
+
+
+def test_list_sorted_by_mtime_desc_and_display_name(client: TestClient, tmp_path: Path) -> None:
+    import time
+
+    root = tmp_path / "videos"
+    # 老项目：英文 slug
+    _seed_video(client)
+    old_spec = root / "demo_ep01.yaml"
+    old_time = time.time() - 3600
+    import os
+
+    os.utime(old_spec, (old_time, old_time))
+    # 新项目：中文系列名（display_name 应取 spec.series 而非 unicode 转义 slug）
+    resp = client.put(
+        "/api/v1/videos/u8d22-u7ecf_ep02/spec",
+        json={"content": VALID_SPEC.replace("series: demo", "series: 财经小课堂").replace("episode: 1", "episode: 2")},
+    )
+    assert resp.status_code == 200, resp.text
+
+    items = client.get("/api/v1/videos").json()
+    assert [v["name"] for v in items] == ["u8d22-u7ecf_ep02", "demo_ep01"]  # 新→旧
+    assert items[0]["display_name"] == "财经小课堂 第2集"
+    assert items[1]["display_name"] == "demo 第1集"
+
+
+def test_delete_video(client: TestClient, tmp_path: Path) -> None:
+    _seed_video(client)
+    video_dir = tmp_path / "videos" / "demo_ep01"
+    video_dir.mkdir(exist_ok=True)
+    (video_dir / "dummy.txt").write_text("x", encoding="utf-8")
+
+    resp = client.delete("/api/v1/videos/demo_ep01")
+    assert resp.status_code == 200 and resp.json()["ok"] is True
+    assert not (tmp_path / "videos" / "demo_ep01.yaml").exists()
+    assert not video_dir.exists()
+    assert client.get("/api/v1/videos").json() == []
+
+    assert client.delete("/api/v1/videos/demo_ep01").status_code == 404
+    assert client.delete("/api/v1/videos/bad$name").status_code == 404
